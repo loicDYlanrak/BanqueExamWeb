@@ -69,6 +69,39 @@
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="client-form" id="clientEditForm" style="display: none;">
+                    <h3 class="form-title">Modifier le Client</h3>
+                    <form onsubmit="event.preventDefault(); sauvegarderModification();">
+                        <input type="hidden" id="edit-id">
+                        <div class="form-group">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-input" id="edit-nom" placeholder="Nom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" class="form-input" id="edit-prenom" placeholder="Prénom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-input" id="edit-telephone" placeholder="Numéro de téléphone">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="edit-email" placeholder="Adresse email">
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 1rem;">
+                            <button type="submit" class="form-button">
+                                <i class="fas fa-save"></i>
+                                Enregistrer
+                            </button>
+                            <button type="button" class="form-button" onclick="annulerModification()">
+                                <i class="fas fa-times"></i>
+                                Annuler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="client-form" id="clientForm">
                     <h3 class="form-title">Nouveau Client</h3>
                     <form onsubmit="event.preventDefault(); ajouterClient();">
@@ -76,22 +109,18 @@
                             <label class="form-label">Nom</label>
                             <input type="text" class="form-input" id="nom" placeholder="Nom du client">
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Prénom</label>
                             <input type="text" class="form-input" id="prenom" placeholder="Prénom du client">
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Téléphone</label>
                             <input type="tel" class="form-input" id="telephone" placeholder="Numéro de téléphone">
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Email</label>
                             <input type="email" class="form-input" id="email" placeholder="Adresse email">
                         </div>
-
                         <button type="submit" class="form-button">
                             <i class="fas fa-user-plus"></i>
                             Ajouter le Client
@@ -163,15 +192,60 @@
                             <div class="client-contact">📞 ${client.telephone || '-'}</div>
                             <div class="client-email">${client.email || '-'}</div>
                         </div>
-                        <div class="client-stats">
+                        <div class="client-bouton">
                             <button class="form-button" onclick="afficherDetailsClient(${client.id})">
                                 <i class="fas fa-eye"></i>
                                 Détails
+                            </button>
+                            <button class="form-button" onclick='afficherFormulaireModification(${JSON.stringify(client)})'>
+                                <i class="fas fa-edit"></i>
+                                Modifier
                             </button>
                         </div>
                     `;
                     clientsList.appendChild(clientItem);
                 });
+            });
+        }
+
+        function afficherFormulaireModification(client) {
+            document.getElementById("edit-id").value = client.id;
+            document.getElementById("edit-nom").value = client.nom;
+            document.getElementById("edit-prenom").value = client.prenom;
+            document.getElementById("edit-telephone").value = client.telephone || '';
+            document.getElementById("edit-email").value = client.email || '';
+            document.getElementById("clientEditForm").style.display = "block";
+            document.getElementById("clientForm").style.display = "none";
+            document.getElementById("client-details").style.display = "none";
+        }
+
+        function annulerModification() {
+            document.getElementById("clientEditForm").style.display = "none";
+            document.getElementById("clientForm").style.display = "block";
+        }
+
+        function sauvegarderModification() {
+            const id = document.getElementById("edit-id").value;
+            const nom = document.getElementById("edit-nom").value;
+            const prenom = document.getElementById("edit-prenom").value;
+            const telephone = document.getElementById("edit-telephone").value;
+            const email = document.getElementById("edit-email").value;
+
+            if (!nom) {
+                alert("Le nom est obligatoire");
+                return;
+            }
+
+            ajax("PUT", `/clients/${id}`, {
+                nom, prenom, telephone, email
+            }, () => {
+                document.getElementById("clientEditForm").style.display = "none";
+                document.getElementById("clientForm").style.display = "block";
+                chargerClients();
+                alert("Client modifié avec succès");
+            }, (error) => {
+                alert("Erreur lors de la modification du client");
+                console.error(error);
             });
         }
 
@@ -202,6 +276,8 @@
                 });
                 
                 document.getElementById("client-details").style.display = "block";
+                document.getElementById("clientEditForm").style.display = "none";
+                document.getElementById("clientForm").style.display = "block";
             });
         }
 
@@ -243,6 +319,7 @@
         function toggleForm() {
             const form = document.getElementById("clientForm");
             form.style.display = form.style.display === "none" ? "block" : "none";
+            document.getElementById("clientEditForm").style.display = "none";
         }
 
         chargerClients();
