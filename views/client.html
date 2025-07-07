@@ -1,22 +1,78 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <title>Gestion des Clients</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
-    .form-container { background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-    input, button { margin: 5px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #45a049; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #4CAF50; color: white; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
-    .client-details { display: none; margin-top: 20px; padding: 15px; background-color: #f9f9f9; }
-    .active { display: block; }
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .form-container {
+      background-color: #f5f5f5;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    input,
+    button {
+      margin: 5px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .client-details {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+    }
+
+    .active {
+      display: block;
+    }
   </style>
 </head>
+
 <body>
 
   <h1>Gestion des Clients</h1>
@@ -25,7 +81,7 @@
     <h2>Rechercher un client</h2>
     <input type="text" id="search" placeholder="Nom, prénom ou téléphone">
     <button onclick="rechercherClients()">Rechercher</button>
-    
+
     <h2>Ajouter un nouveau client</h2>
     <input type="text" id="nom" placeholder="Nom">
     <input type="text" id="prenom" placeholder="Prénom">
@@ -37,7 +93,12 @@
   <table id="table-clients">
     <thead>
       <tr>
-        <th>ID</th><th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Email</th><th>Actions</th>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Téléphone</th>
+        <th>Email</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -46,17 +107,46 @@
   <div id="client-details" class="client-details">
     <h2>Détails du Client</h2>
     <div id="client-info"></div>
-    
+
     <h3>Prêts du Client</h3>
     <table id="table-prets">
       <thead>
         <tr>
-          <th>ID</th><th>Type</th><th>Montant</th><th>Date début</th><th>Durée (mois)</th><th>Statut</th>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Montant</th>
+          <th>Date début</th>
+          <th>Durée (mois)</th>
+          <th>Statut</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
     <button onclick="fermerDetails()">Fermer</button>
+  </div>
+
+  <!-- Ajoutez ce div après le panneau de détails client -->
+  <div id="client-edit" class="client-details">
+    <h2>Modifier le Client</h2>
+    <input type="hidden" id="edit-id">
+    <div>
+      <label>Nom:</label>
+      <input type="text" id="edit-nom">
+    </div>
+    <div>
+      <label>Prénom:</label>
+      <input type="text" id="edit-prenom">
+    </div>
+    <div>
+      <label>Téléphone:</label>
+      <input type="text" id="edit-telephone">
+    </div>
+    <div>
+      <label>Email:</label>
+      <input type="email" id="edit-email">
+    </div>
+    <button onclick="sauvegarderModification()">Enregistrer</button>
+    <button onclick="annulerModification()">Annuler</button>
   </div>
 
   <script>
@@ -66,11 +156,11 @@
     function ajax(method, url, data, callback, errorCallback) {
       const xhr = new XMLHttpRequest();
       xhr.open(method, apiBase + url, true);
-      
+
       if (method === 'POST' || method === 'PUT') {
         xhr.setRequestHeader("Content-Type", "application/json");
       }
-      
+
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {
@@ -82,18 +172,18 @@
           }
         }
       };
-      
+
       xhr.send(method === 'GET' ? null : JSON.stringify(data));
     }
 
     // Charger la liste des clients
     function chargerClients(search = '') {
       const url = search ? `/clients?search=${encodeURIComponent(search)}` : '/clients';
-      
+
       ajax("GET", url, null, (data) => {
         const tbody = document.querySelector("#table-clients tbody");
         tbody.innerHTML = "";
-        
+
         data.forEach(client => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
@@ -102,10 +192,59 @@
             <td>${client.prenom}</td>
             <td>${client.telephone || '-'}</td>
             <td>${client.email || '-'}</td>
-            <td><button onclick='afficherDetailsClient(${client.id})'>👁️ Détails</button></td>
+            <td>
+              <button onclick='afficherDetailsClient(${client.id})'>👁️ Détails</button>
+              <button onclick='afficherFormulaireModification(${JSON.stringify(client)})'>✏️ Modifier</button>
+            </td>
           `;
           tbody.appendChild(tr);
         });
+      });
+    }
+
+    // Ajoutez ces nouvelles fonctions:
+    function afficherFormulaireModification(client) {
+      // Remplir le formulaire
+      document.getElementById("edit-id").value = client.id;
+      document.getElementById("edit-nom").value = client.nom;
+      document.getElementById("edit-prenom").value = client.prenom;
+      document.getElementById("edit-telephone").value = client.telephone || '';
+      document.getElementById("edit-email").value = client.email || '';
+
+      // Afficher le panneau de modification
+      document.getElementById("client-edit").classList.add("active");
+      document.getElementById("client-details").classList.remove("active");
+    }
+
+    function annulerModification() {
+      document.getElementById("client-edit").classList.remove("active");
+    }
+
+    function sauvegarderModification() {
+      const id = document.getElementById("edit-id").value;
+      const nom = document.getElementById("edit-nom").value;
+      const prenom = document.getElementById("edit-prenom").value;
+      const telephone = document.getElementById("edit-telephone").value;
+      const email = document.getElementById("edit-email").value;
+
+      if (!nom) {
+        alert("Le nom est obligatoire");
+        return;
+      }
+
+      ajax("PUT", `/clients/${id}`, {
+        nom, prenom, telephone, email
+      }, () => {
+        // Fermer le panneau de modification
+        document.getElementById("client-edit").classList.remove("active");
+
+        // Recharger la liste des clients
+        chargerClients();
+
+        alert("Client modifié avec succès");
+      }, (error) => {
+        alert("Erreur lors de la modification du client");
+        console.error(error);
       });
     }
 
@@ -118,11 +257,11 @@
           <p><strong>Téléphone:</strong> ${client.telephone || '-'}</p>
           <p><strong>Email:</strong> ${client.email || '-'}</p>
         `;
-        
+
         // Afficher ses prêts
         const tbody = document.querySelector("#table-prets tbody");
         tbody.innerHTML = "";
-        
+
         client.prets.forEach(pret => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
@@ -135,7 +274,7 @@
           `;
           tbody.appendChild(tr);
         });
-        
+
         // Afficher le panneau de détails
         document.getElementById("client-details").classList.add("active");
       });
@@ -158,12 +297,12 @@
       const prenom = document.getElementById("prenom").value;
       const telephone = document.getElementById("telephone").value;
       const email = document.getElementById("email").value;
-      
+
       if (!nom) {
         alert("Le nom est obligatoire");
         return;
       }
-      
+
       ajax("POST", "/clients", {
         nom, prenom, telephone, email
       }, () => {
@@ -172,7 +311,7 @@
         document.getElementById("prenom").value = "";
         document.getElementById("telephone").value = "";
         document.getElementById("email").value = "";
-        
+
         // Recharger la liste
         chargerClients();
       }, (error) => {
@@ -186,4 +325,5 @@
   </script>
 
 </body>
+
 </html>
