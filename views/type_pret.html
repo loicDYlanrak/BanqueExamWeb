@@ -19,14 +19,20 @@
     <input type="hidden" id="id">
     <input type="text" id="nom" placeholder="Nom">
     <input type="number" id="taux" placeholder="Taux">
-    <input type="number" id="duree_mois" placeholder="Durée(mois)">
+    <input type="number" id="duree_annee" placeholder="Durée(annee)">
+    <input type="number" id="assurance" placeholder="Assurance">
     <button onclick="ajouterOuModifier()">Ajouter / Modifier</button>
   </div>
 
   <table id="table-type-pret">
     <thead>
       <tr>
-        <th>ID</th><th>Nom</th><th>Taux</th><th>Durée(mois)</th><th>Actions</th>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Taux</th>
+        <th>Durée(annee)</th>
+        <th>Assurance</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -57,7 +63,8 @@
             <td>${e.id}</td>
             <td>${e.nom}</td>
             <td>${e.taux}</td>
-            <td>${e.duree_mois}</td>
+            <td>${e.duree_annee}</td>
+            <td>${e.assurance}</td>
             <td>
               <button onclick='remplirFormulaire(${JSON.stringify(e)})'>✏️</button>
               <button onclick='supprimerEtudiant(${e.id})'>🗑️</button>
@@ -72,9 +79,10 @@
       const id = document.getElementById("id").value;
       const nom = document.getElementById("nom").value;
       const taux = document.getElementById("taux").value;
-      const duree_mois = document.getElementById("duree_mois").value;
+      const duree_annee = document.getElementById("duree_annee").value;
+      const assurance = document.getElementById("assurance").value;
 
-      const data = `nom=${encodeURIComponent(nom)}&taux=${encodeURIComponent(taux)}&duree_mois=${encodeURIComponent(duree_mois)}`;
+      const data = `nom=${encodeURIComponent(nom)}&taux=${encodeURIComponent(taux)}&duree_annee=${encodeURIComponent(duree_annee)}&assurance=${encodeURIComponent(assurance)}`;
 
       if (id) {
         console.log(data);
@@ -94,11 +102,12 @@
       document.getElementById("id").value = e.id;
       document.getElementById("nom").value = e.nom;
       document.getElementById("taux").value = e.taux;
-      document.getElementById("duree_mois").value = e.duree_mois;
+      document.getElementById("duree_annee").value = e.duree_annee;
+      document.getElementById("assurance").value = e.assurance;
     }
 
     function supprimerEtudiant(id) {
-      if (confirm("Supprimer cet étudiant ?")) {
+      if (confirm("Supprimer ce type de pret ?")) {
         ajax("DELETE", `/type_pret/${id}`, null, () => {
           chargerEtudiants();
         });
@@ -109,7 +118,8 @@
       document.getElementById("id").value = "";
       document.getElementById("nom").value = "";
       document.getElementById("taux").value = "";
-      document.getElementById("duree_mois").value = "";
+      document.getElementById("duree_annee").value = "";
+      document.getElementById("assurance").value = "";
     }
 
     chargerEtudiants();

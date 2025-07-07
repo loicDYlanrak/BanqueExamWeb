@@ -14,15 +14,15 @@ class TypePretController {
 
     public static function create() {
         $data = Flight::request()->data;
-        $stmt = getDB()->prepare("INSERT INTO type_pret (nom, taux, duree_mois) VALUES (?, ?, ?)");
-        $stmt->execute([$data['nom'], $data['taux'], $data['duree_mois']]);
+        $stmt = getDB()->prepare("INSERT INTO type_pret (nom, taux, duree_annee, assurance) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$data['nom'], $data['taux'], $data['duree_annee'], $data['assurance']]);
         Flight::json(['success' => true]);
     }
 
     public static function update($id) {
         parse_str(file_get_contents("php://input"), $data);
-        $stmt = getDB()->prepare("UPDATE type_pret SET nom = ?, taux = ?, duree_mois = ? WHERE id = ?");
-        $stmt->execute([$data['nom'], $data['taux'], $data['duree_mois'], $id]);
+        $stmt = getDB()->prepare("UPDATE type_pret SET nom = ?, taux = ?, duree_annee = ?, assurance = ? WHERE id = ?");
+        $stmt->execute([$data['nom'], $data['taux'], $data['duree_annee'], $data['assurance'], $id]);
         Flight::json(['success' => true]);
     }
 
