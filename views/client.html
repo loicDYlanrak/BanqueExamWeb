@@ -115,8 +115,9 @@
           <th>ID</th>
           <th>Type</th>
           <th>Montant</th>
+          <th>Taux d'assurance</th>
           <th>Date début</th>
-          <th>Durée (mois)</th>
+          <th>Durée (annee)</th>
           <th>Statut</th>
         </tr>
       </thead>
@@ -268,8 +269,9 @@
             <td>${pret.id}</td>
             <td>${pret.type_pret}</td>
             <td>${pret.montant} €</td>
+            <td>${pret.taux_assurance} %</td>
             <td>${pret.date_debut}</td>
-            <td>${pret.duree_mois}</td>
+            <td>${pret.duree}</td>
             <td>${pret.est_actif ? 'Actif' : 'Clôturé'}</td>
           `;
           tbody.appendChild(tr);
