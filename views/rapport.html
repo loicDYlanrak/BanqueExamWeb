@@ -462,7 +462,7 @@
             ajax("POST", "/rapports/calcul-mensualite", {
                 montant: montant,
                 taux: taux,
-                duree_mois: duree
+                duree_annee: duree
             }, (data) => {
                 const element = document.getElementById("resultat-mensualite");
                 element.innerHTML = `
@@ -470,7 +470,7 @@
           <p><strong>Montant du prêt:</strong> ${data.montant} €</p>
           <p><strong>Taux annuel:</strong> ${data.taux_annuel}%</p>
           <p><strong>Durée:</strong> ${data.duree_mois} mois (${Math.floor(data.duree_mois / 12)} ans et ${data.duree_mois % 12} mois)</p>
-          <p><strong>Mensualité:</strong> <span class="montant-positif">${data.mensualite} €</span></p>
+          <p><strong>Mensualité:</strong> <span class="montant-positif">${(data.mensualite).toFixed(2)} €</span></p>
           <p><strong>Coût total du crédit:</strong> ${(data.mensualite * data.duree_mois).toFixed(2)} €</p>
           <p><strong>Intérêts totaux:</strong> ${(data.mensualite * data.duree_mois - data.montant).toFixed(2)} €</p>
         `;
