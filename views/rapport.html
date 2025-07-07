@@ -169,6 +169,22 @@
             font-weight: bold;
             background-color: #f5f5f5;
         }
+
+        /* Ajoutez ce style pour les cellules du tableau */
+        td.montant-positif {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        td.montant-negatif {
+            color: #e53935;
+            font-weight: bold;
+        }
+
+        #table-interets-mois tfoot td {
+            font-weight: bold;
+            background-color: #f5f5f5;
+        }
     </style>
 </head>
 
@@ -178,8 +194,7 @@
     </div>
 
     <div class="rapport-section">
-        <h3>Intérêts gagnés par mois</h3>
-
+        <h3><i class="fas fa-chart-line"></i> Intérêts gagnés par mois</h3>
         <div class="filters">
             <div>
                 <label>Date début:</label>
@@ -195,7 +210,9 @@
             <thead>
                 <tr>
                     <th>Mois/Année</th>
-                    <th>Intérêts gagnés</th>
+                    <th>Bénéfice Théorique</th>
+                    <th>Bénéfice Réel</th>
+                    <th>Écart</th>
                     <th>Nombre de prêts</th>
                 </tr>
             </thead>
@@ -203,7 +220,9 @@
             <tfoot>
                 <tr>
                     <td><strong>Total</strong></td>
-                    <td id="total-interets">0.00 €</td>
+                    <td id="total-theorique">0.00 €</td>
+                    <td id="total-reel">0.00 €</td>
+                    <td id="total-ecart">0.00 €</td>
                     <td id="total-prets">0</td>
                 </tr>
             </tfoot>
@@ -275,7 +294,7 @@
         function chargerBeneficesTotaux() {
             document.getElementById("benefices-totaux").innerHTML = "<p>Chargement...</p>";
 
-            ajax("GET", "/benefices/totaux", null, (data) => {
+            ajax("GET", "/rapports/totaux", null, (data) => {
                 const element = document.getElementById("benefices-totaux");
                 const montant = parseFloat(data.benefices_totaux || 0);
                 const classe = montant >= 0 ? "montant-positif" : "montant-negatif";
@@ -321,80 +340,103 @@
 
             if (!dateDebut || !dateFin) return;
 
-            ajax("GET", `/benefices/interets-mois?debut=${dateDebut}&fin=${dateFin}`, null, (data) => {
+            ajax("GET", `/rapports/interets-mois?debut=${dateDebut}&fin=${dateFin}`, null, (data) => {
                 const tbody = document.querySelector("#table-interets-mois tbody");
                 tbody.innerHTML = "";
 
-                let totalInterets = 0;
+                let totalTheorique = 0;
+                let totalReel = 0;
                 let totalPrets = 0;
 
                 data.forEach(item => {
-                    totalInterets += parseFloat(item.interets);
+                    totalTheorique += parseFloat(item.interets_theoriques);
+                    totalReel += parseFloat(item.interets_reels);
                     totalPrets += parseInt(item.nombre_prets);
+
+                    const ecart = item.interets_reels - item.interets_theoriques;
+                    const ecartClass = ecart >= 0 ? "montant-positif" : "montant-negatif";
 
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
-        <td>${item.mois}/${item.annee}</td>
-        <td>${parseFloat(item.interets).toFixed(2)} €</td>
-        <td>${item.nombre_prets}</td>
-      `;
+                <td>${item.mois_annee}</td>
+                <td>${parseFloat(item.interets_theoriques).toFixed(2)} €</td>
+                <td>${parseFloat(item.interets_reels).toFixed(2)} €</td>
+                <td class="${ecartClass}">${ecart.toFixed(2)} €</td>
+                <td>${item.nombre_prets}</td>
+            `;
                     tbody.appendChild(tr);
                 });
 
-                document.getElementById("total-interets").textContent = totalInterets.toFixed(2) + " €";
+                const totalEcart = totalReel - totalTheorique;
+                const totalEcartClass = totalEcart >= 0 ? "montant-positif" : "montant-negatif";
+
+                document.getElementById("total-theorique").textContent = totalTheorique.toFixed(2) + " €";
+                document.getElementById("total-reel").textContent = totalReel.toFixed(2) + " €";
+                document.getElementById("total-ecart").textContent = totalEcart.toFixed(2) + " €";
+                document.getElementById("total-ecart").className = totalEcartClass;
                 document.getElementById("total-prets").textContent = totalPrets;
             });
         }
 
-        // Fonction modifiée pour les prêts en retard avec date de simulation
         function chargerPretsEnRetard() {
             const simulationDate = document.getElementById('simulation-date').value;
+            let url = '/rapports/retards';
 
-            if (!simulationDate) return;
+            if (simulationDate) {
+                url += `?simulation=${simulationDate}`;
+            }
 
-            ajax("GET", `/benefices/retards?simulation=${simulationDate}`, null, (data) => {
+            document.getElementById("prets-en-retard").innerHTML = "<p>Chargement en cours...</p>";
+
+            ajax("GET", url, null, (data) => {
                 const element = document.getElementById("prets-en-retard");
 
-                let html = `
-      <p><strong>Date de simulation:</strong> ${simulationDate}</p>
-      <p><strong>Nombre de prêts en retard:</strong> ${data.nombre_prets_en_retard}</p>
-      <p><strong>Montant total des retards:</strong> ${parseFloat(data.total_retards || 0).toFixed(2)} €</p>
-    `;
-
-                if (data.prets_en_retard.length > 0) {
-                    html += `<table>
-        <tr>
-          <th>Client</th>
-          <th>Prêt ID</th>
-          <th>Mensualité</th>
-          <th>Retards</th>
-          <th>Montant dû</th>
-        </tr>`;
+                if (data.prets_en_retard && data.prets_en_retard.length > 0) {
+                    let html = `
+                <p><strong>Nombre de prêts en retard:</strong> ${data.nombre_prets_en_retard}</p>
+                <p><strong>Montant total des retards:</strong> <span class="montant-negatif">${parseFloat(data.total_retards).toFixed(2)} €</span></p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Type</th>
+                            <th>Montant</th>
+                            <th>Date début</th>
+                            <th>Mensualité</th>
+                            <th>Retards (mois)</th>
+                            <th>Montant dû</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
                     data.prets_en_retard.forEach(pret => {
-                        const mensualite = parseFloat(pret.mensualite || 0);
-                        const retards = parseInt(pret.retards || 0);
+                        // Convert to numbers before calculations
+                        const mensualite = parseFloat(pret.mensualite);
+                        const retards = parseInt(pret.retards);
                         const montantDu = (mensualite * retards).toFixed(2);
 
                         html += `
-        <tr>
-          <td>${pret.nom} ${pret.prenom}</td>
-          <td>${pret.id}</td>
-          <td>${mensualite.toFixed(2)} €</td>
-          <td>${retards}</td>
-          <td>${montantDu} €</td>
-        </tr>`;
+                    <tr>
+                        <td>${pret.prenom} ${pret.nom}</td>
+                        <td>${pret.type_pret}</td>
+                        <td>${parseFloat(pret.montant).toFixed(2)} €</td>
+                        <td>${pret.date_debut}</td>
+                        <td>${mensualite.toFixed(2)} €</td>
+                        <td>${retards}</td>
+                        <td class="montant-negatif">${montantDu} €</td>
+                    </tr>`;
                     });
 
-                    html += `</table>`;
+                    html += `</tbody></table>`;
+                    element.innerHTML = html;
                 } else {
-                    html += "<p>Aucun prêt en retard à cette date</p>";
+                    element.innerHTML = "<p>Aucun prêt en retard pour cette période.</p>";
                 }
-
-                element.innerHTML = html;
+            }, (error) => {
+                document.getElementById("prets-en-retard").innerHTML =
+                    "<p class='montant-negatif'>Erreur lors du chargement des prêts en retard</p>";
             });
         }
-
         function calculerMensualite() {
             const montant = parseFloat(document.getElementById("calc-montant").value);
             const taux = parseFloat(document.getElementById("calc-taux").value);
@@ -417,7 +459,7 @@
 
             document.getElementById("resultat-mensualite").innerHTML = "<p>Calcul en cours...</p>";
 
-            ajax("POST", "/benefices/calcul-mensualite", {
+            ajax("POST", "/rapports/calcul-mensualite", {
                 montant: montant,
                 taux: taux,
                 duree_mois: duree

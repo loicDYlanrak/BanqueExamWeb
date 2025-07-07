@@ -58,3 +58,7 @@ Exemple de mensualité : Pour un prêt de 10 000€ à 5% sur 2 ans :
 M = [10 000 × (5/12)/100] / [1 − (1 + (5/12)/100)^−24] ≈ 438.71€/mois.
 
 Cette structure couvre l'essentiel tout restant simple. Si besoin d'extensions (garanties, pénalités de retard), on peut ajouter des tables.
+
+172.60.0.13
+172.60.0.18
+172.60.257.250

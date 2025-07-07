@@ -25,10 +25,10 @@
     Flight::route('PUT /clients/@id', ['ClientController','update']);
 
     // Routes pour les rapports
-    Flight::route('GET /benefices/totaux', ['RapportController','getBeneficesTotaux']);
-    Flight::route('GET /benefices/retards', ['RapportController','getPretsEnRetard']);
-    Flight::route('POST /benefices/calcul-mensualite', ['RapportController','calculMensualite']);
-    Flight::route('GET /benefices/interets-mois', ['RapportController','getInteretsMois']);
+    Flight::route('GET /rapports/totaux', ['RapportController','getBeneficesTotaux']);
+    Flight::route('GET /rapports/retards', ['RapportController','getPretsEnRetard']);
+    Flight::route('POST /rapports/calcul-mensualite', ['RapportController','calculMensualite']);
+    Flight::route('GET /rapports/interets-mois', ['RapportController','getInteretsMois']);
 
     Flight::start();
 ?>
