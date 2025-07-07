@@ -6,7 +6,7 @@ Voici ce qui se passe dans la base de données à chaque étape :
 ---
 
 #### **1. Ajout de Fonds dans l'EF**  
-**Scénario** : CreditPlus ajoute 100 000€ de capital initial.  
+**Scénario** : CreditPlus ajoute 100 000Ar de capital initial.  
 
 **Action en Base** :  
 ```sql
@@ -19,7 +19,7 @@ VALUES (100000.00, 'Capital initial');
 |----|----------|--------------------|-----------------|
 | 1  | 100000.00| 2023-10-01 09:00:00| Capital initial |
 
-→ Les fonds disponibles pour les prêts sont maintenant de **100 000€**.
+→ Les fonds disponibles pour les prêts sont maintenant de **100 000Ar**.
 
 ---
 
@@ -58,11 +58,11 @@ VALUES ('Dupont', 'Jean', '0612345678');
 ---
 
 #### **4. Accord d'un Prêt à Jean**  
-**Scénario** : Jean emprunte 15 000€ pour une voiture (type ID 1).  
+**Scénario** : Jean emprunte 15 000Ar pour une voiture (type ID 1).  
 
 **Calcul** :  
 - Taux mensuel = `7% / 12 ≈ 0.583%`  
-- Mensualité = `[15 000 × 0.00583] / [1 − (1 + 0.00583)^−36] ≈ 463.12€/mois`.  
+- Mensualité = `[15 000 × 0.00583] / [1 − (1 + 0.00583)^−36] ≈ 463.12Ar/mois`.  
 
 **Action en Base** :  
 ```sql
@@ -87,12 +87,12 @@ VALUES (-15000.00, 'Débit pour prêt ID 1');
 | 1  | 100000.00 | 2023-10-01 09:00:00| Capital initial       |
 | 2  | -15000.00 | 2023-10-05 10:30:00| Débit pour prêt ID 1  |
 
-→ Fonds restants : **85 000€** (100k - 15k).
+→ Fonds restants : **85 000Ar** (100k - 15k).
 
 ---
 
 #### **5. Remboursement par Jean**  
-**Scénario** : Jean paie sa 1ère mensualité (463.12€) le 05/11/2023.  
+**Scénario** : Jean paie sa 1ère mensualité (463.12Ar) le 05/11/2023.  
 
 **Action en Base** :  
 ```sql
@@ -117,16 +117,16 @@ VALUES (463.12, 'Remboursement prêt ID 1 - mois 1');
 | ...| ...       | ...                | ...                                  |
 | 3  | 463.12    | 2023-11-05 14:15:00| Remboursement prêt ID 1 - mois 1     |
 
-→ Fonds mis à jour : **85 000€ + 463.12€ = 85 463.12€**.  
+→ Fonds mis à jour : **85 000Ar + 463.12Ar = 85 463.12Ar**.  
 
 ---
 
 ### Visualisation des Données après 1 an (Exemple)  
-- **Prêt ID 1** : 12 remboursements (463.12 × 12 = 5 557.44€).  
+- **Prêt ID 1** : 12 remboursements (463.12 × 12 = 5 557.44Ar).  
 - **Reste dû** :  
-  - Intérêts totaux initiaux : ~1 800€ (7% de 15k).  
-  - Capital remboursé : ~3 757.44€ (5 557.44 - intérêts).  
-  - **Reste** : 15 000 - 3 757.44 ≈ **11 242.56€**.  
+  - Intérêts totaux initiaux : ~1 800Ar (7% de 15k).  
+  - Capital remboursé : ~3 757.44Ar (5 557.44 - intérêts).  
+  - **Reste** : 15 000 - 3 757.44 ≈ **11 242.56Ar**.  
 
 ---
 

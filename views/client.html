@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Clients - FundFlow</title>
+    <link rel="stylesheet" href="assets/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/clients.css">
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-university"></i>
+                FundFlow
+            </a>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="fond.html">Fonds</a></li>
+                <li><a href="loans.html">Prêts</a></li>
+                <li><a href="client.html" class="active">Clients</a></li>
+                <li><a href="reports.html">Rapports</a></li>
+            </ul>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Gestion des Clients</h1>
+            <button class="add-client-btn" onclick="toggleForm()">
+                <i class="fas fa-user-plus"></i>
+                Ajouter un Client
+            </button>
+        </div>
+
+        <div class="clients-grid">
+            <div class="clients-main">
+                <div class="search-filters">
+                    <div class="search-row">
+                        <div class="search-group">
+                            <label class="search-label">Rechercher</label>
+                            <input type="text" class="search-input" id="search" placeholder="Nom, prénom ou téléphone..." onkeyup="rechercherClients()">
+                        </div>
+                        <div class="search-group">
+                            <button class="search-btn" onclick="rechercherClients()">
+                                <i class="fas fa-search"></i>
+                                Rechercher
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clients-list">
+                    <div class="list-header">
+                        <h3 class="list-title">Liste des Clients</h3>
+                    </div>
+
+                    <div id="clientsList"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="client-form" id="clientEditForm" style="display: none;">
+                    <h3 class="form-title">Modifier le Client</h3>
+                    <form onsubmit="event.preventDefault(); sauvegarderModification();">
+                        <input type="hidden" id="edit-id">
+                        <div class="form-group">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-input" id="edit-nom" placeholder="Nom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" class="form-input" id="edit-prenom" placeholder="Prénom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-input" id="edit-telephone" placeholder="Numéro de téléphone">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="edit-email" placeholder="Adresse email">
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 1rem;">
+                            <button type="submit" class="form-button">
+                                <i class="fas fa-save"></i>
+                                Enregistrer
+                            </button>
+                            <button type="button" class="form-button" onclick="annulerModification()">
+                                <i class="fas fa-times"></i>
+                                Annuler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="client-form" id="clientForm">
+                    <h3 class="form-title">Nouveau Client</h3>
+                    <form onsubmit="event.preventDefault(); ajouterClient();">
+                        <div class="form-group">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-input" id="nom" placeholder="Nom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" class="form-input" id="prenom" placeholder="Prénom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-input" id="telephone" placeholder="Numéro de téléphone">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="email" placeholder="Adresse email">
+                        </div>
+                        <button type="submit" class="form-button">
+                            <i class="fas fa-user-plus"></i>
+                            Ajouter le Client
+                        </button>
+                    </form>
+                </div>
+
+                <div class="client-details client-form" id="client-details">
+                    <h3 class="form-title">Détails du Client</h3>
+                    <div id="client-info"></div>
+                    <br>
+                    <h4>Prêts du Client</h4>
+                    <div id="client-loans"></div>
+                    <br>
+                    <button class="form-button" onclick="fermerDetails()">
+                        <i class="fas fa-times"></i>
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiBase = "http://localhost:8000";
+
+        function ajax(method, url, data, callback, errorCallback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open(method, apiBase + url, true);
+            
+            if (method === 'POST' || method === 'PUT') {
+                xhr.setRequestHeader("Content-Type", "application/json");
+            }
+            
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        callback(JSON.parse(xhr.responseText));
+                    } else if (errorCallback) {
+                        errorCallback(xhr);
+                    } else {
+                        console.error("Error:", xhr.status, xhr.responseText);
+                        alert("Erreur lors de la requête. Voir la console pour les détails.");
+                    }
+                }
+            };
+            
+            xhr.send(method === 'GET' ? null : JSON.stringify(data));
+        }
+
+        function chargerClients(search = '') {
+            const url = search ? `/clients?search=${encodeURIComponent(search)}` : '/clients';
+            
+            ajax("GET", url, null, (data) => {
+                const clientsList = document.getElementById("clientsList");
+                clientsList.innerHTML = "";
+                
+                data.forEach(client => {
+                    const clientItem = document.createElement("div");
+                    clientItem.className = "client-item";
+                    clientItem.setAttribute("data-name", `${client.nom} ${client.prenom}`);
+                    clientItem.setAttribute("data-phone", client.telephone || '');
+                    clientItem.innerHTML = `
+                        <div class="client-avatar">
+                            ${client.prenom.charAt(0)}${client.nom.charAt(0)}
+                        </div>
+                        <div class="client-info">
+                            <div class="client-name">${client.nom} ${client.prenom}</div>
+                            <div class="client-contact">📞 ${client.telephone || '-'}</div>
+                            <div class="client-email">${client.email || '-'}</div>
+                        </div>
+                        <div class="client-bouton">
+                            <button class="form-button" onclick="afficherDetailsClient(${client.id})">
+                                <i class="fas fa-eye"></i>
+                                Détails
+                            </button>
+                            <button class="form-button" onclick='afficherFormulaireModification(${JSON.stringify(client)})'>
+                                <i class="fas fa-edit"></i>
+                                Modifier
+                            </button>
+                        </div>
+                    `;
+                    clientsList.appendChild(clientItem);
+                });
+            });
+        }
+
+        function afficherFormulaireModification(client) {
+            document.getElementById("edit-id").value = client.id;
+            document.getElementById("edit-nom").value = client.nom;
+            document.getElementById("edit-prenom").value = client.prenom;
+            document.getElementById("edit-telephone").value = client.telephone || '';
+            document.getElementById("edit-email").value = client.email || '';
+            document.getElementById("clientEditForm").style.display = "block";
+            document.getElementById("clientForm").style.display = "none";
+            document.getElementById("client-details").style.display = "none";
+        }
+
+        function annulerModification() {
+            document.getElementById("clientEditForm").style.display = "none";
+            document.getElementById("clientForm").style.display = "block";
+        }
+
+        function sauvegarderModification() {
+            const id = document.getElementById("edit-id").value;
+            const nom = document.getElementById("edit-nom").value;
+            const prenom = document.getElementById("edit-prenom").value;
+            const telephone = document.getElementById("edit-telephone").value;
+            const email = document.getElementById("edit-email").value;
+
+            if (!nom) {
+                alert("Le nom est obligatoire");
+                return;
+            }
+
+            ajax("PUT", `/clients/${id}`, {
+                nom, prenom, telephone, email
+            }, () => {
+                document.getElementById("clientEditForm").style.display = "none";
+                document.getElementById("clientForm").style.display = "block";
+                chargerClients();
+                alert("Client modifié avec succès");
+            }, (error) => {
+                alert("Erreur lors de la modification du client");
+                console.error(error);
+            });
+        }
+
+        function afficherDetailsClient(id) {
+            ajax("GET", `/clients/${id}`, null, (client) => {
+                document.getElementById("client-info").innerHTML = `
+                    <div class="client-name">${client.nom} ${client.prenom}</div>
+                    <div class="client-contact">📞 ${client.telephone || '-'}</div>
+                    <div class="client-email">${client.email || '-'}</div>
+                `;
+                
+                const loansList = document.getElementById("client-loans");
+                loansList.innerHTML = "";
+                
+                client.prets.forEach(pret => {
+                    const loanItem = document.createElement("div");
+                    loanItem.className = "client-item";
+                    loanItem.innerHTML = `
+                        <div class="client-info">
+                            <div class="client-name">${pret.type_pret}</div>
+                            <div class="client-contact">Montant: Ar ${pret.montant}</div>
+                            <div class="client-email">Date début: ${pret.date_debut}</div>
+                            <div class="client-email">Durée: ${pret.duree_mois} mois</div>
+                            <div class="client-email">Statut: ${pret.est_actif ? 'Actif' : 'Clôturé'}</div>
+                        </div>
+                    `;
+                    loansList.appendChild(loanItem);
+                });
+                
+                document.getElementById("client-details").style.display = "block";
+                document.getElementById("clientEditForm").style.display = "none";
+                document.getElementById("clientForm").style.display = "block";
+            });
+        }
+
+        function fermerDetails() {
+            document.getElementById("client-details").style.display = "none";
+        }
+
+        function rechercherClients() {
+            const search = document.getElementById("search").value;
+            chargerClients(search);
+        }
+
+        function ajouterClient() {
+            const nom = document.getElementById("nom").value;
+            const prenom = document.getElementById("prenom").value;
+            const telephone = document.getElementById("telephone").value;
+            const email = document.getElementById("email").value;
+            
+            if (!nom) {
+                alert("Le nom est obligatoire");
+                return;
+            }
+            
+            ajax("POST", "/clients", {
+                nom, prenom, telephone, email
+            }, () => {
+                document.getElementById("nom").value = "";
+                document.getElementById("prenom").value = "";
+                document.getElementById("telephone").value = "";
+                document.getElementById("email").value = "";
+                chargerClients();
+                toggleForm();
+            }, (error) => {
+                alert("Erreur lors de l'ajout du client");
+                console.error(error);
+            });
+        }
+
+        function toggleForm() {
+            const form = document.getElementById("clientForm");
+            form.style.display = form.style.display === "none" ? "block" : "none";
+            document.getElementById("clientEditForm").style.display = "none";
+        }
+
+        chargerClients();
+    </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Fonds - FundFlow</title>
+    <link rel="stylesheet" href="assets/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/funds.css">
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-university"></i>
+                FundFlow
+            </a>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="fond.html" class="active">Fonds</a></li>
+                <li><a href="loans.html">Prêts</a></li>
+                <li><a href="client.html">Clients</a></li>
+                <li><a href="reports.html">Rapports</a></li>
+            </ul>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Gestion des Fonds</h1>
+            <button class="add-fund-btn" onclick="openModal()">
+                <i class="fas fa-plus"></i>
+                Ajouter des Fonds
+            </button>
+        </div>
+
+        <div class="funds-summary">
+            <div class="summary-card">
+                <div class="summary-header">
+                    <div class="summary-title">Solde Total</div>
+                    <div class="summary-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="summary-value" id="solde-total"> 0.00 Ar</div>
+                <div class="summary-subtitle">Tous fonds confondus</div>
+            </div>
+        </div>
+
+        <!-- Modal for fund addition form -->
+        <div class="modal" id="fundModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <div class="">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--text-color);">Ajouter des Fonds</h3>
+                    <form onsubmit="event.preventDefault(); ajouterFonds();">
+                        <div class="form-group">
+                            <label class="form-label">Type d'opération</label>
+                            <select class="form-input" id="type">
+                                <option value="entree">Entrée de fonds</option>
+                                <option value="sortie">Sortie de fonds</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Montant (Ar)</label>
+                            <input type="number" class="form-input" id="montant" placeholder="Entrez le montant" step="0.01" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input form-textarea" id="description" placeholder="Description de l'opération..."></textarea>
+                        </div>
+
+                        <button type="submit" class="form-button">
+                            <i class="fas fa-plus"></i>
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-header">
+                <h3 class="history-title">Historique des Mouvements</h3>
+            </div>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const apiBase = "http://localhost:8000";
+
+        function ajax(method, url, data, successCallback, errorCallback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open(method, apiBase + url, true);
+
+            if (method === 'POST' || method === 'PUT') {
+                xhr.setRequestHeader("Content-Type", "application/json");
+            }
+
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        successCallback(JSON.parse(xhr.responseText));
+                    } else if (errorCallback) {
+                        errorCallback(xhr);
+                    } else {
+                        console.error("Error:", xhr.status, xhr.responseText);
+                        alert("Erreur lors de la requête. Voir la console pour les détails.");
+                    }
+                }
+            };
+
+            xhr.send(method === 'GET' ? null : JSON.stringify(data));
+        }
+
+        function chargerHistoriqueFonds() {
+            ajax("GET", "/fonds", null, (data) => {
+                const historyList = document.getElementById("history-list");
+                historyList.innerHTML = "";
+
+                let soldeTotal = 0;
+
+                data.forEach(fond => {
+                    const isEntree = fond.montant >= 0;
+                    soldeTotal += parseFloat(fond.montant);
+
+                    const historyItem = document.createElement("div");
+                    historyItem.className = `history-item ${isEntree ? 'income' : 'expense'}`;
+                    historyItem.innerHTML = `
+                        <div class="history-icon ${isEntree ? 'income' : 'expense'}">
+                            <i class="fas fa-arrow-${isEntree ? 'down' : 'up'}"></i>
+                        </div>
+                        <div class="history-content">
+                            <div class="history-title-item">${isEntree ? 'Entrée' : 'Sortie'} de fonds</div>
+                            <div class="history-subtitle">${fond.description}</div>
+                        </div>
+                        <div class="history-amount ${isEntree ? 'income' : 'expense'}">
+                            ${isEntree ? '+' : '-'}Ar ${Math.abs(fond.montant).toFixed(2)}
+                        </div>
+                        <div class="history-date">${new Date(fond.date_ajout).toLocaleString()}</div>
+                    `;
+                    historyList.appendChild(historyItem);
+                });
+
+                const soldeElement = document.getElementById("solde-total");
+                soldeElement.textContent = `Ar ${soldeTotal.toFixed(2)}`;
+                soldeElement.className = `summary-value ${soldeTotal >= 0 ? 'montant-positif' : 'montant-negatif'}`;
+            });
+        }
+
+        function ajouterFonds() {
+            const type = document.getElementById("type").value;
+            const montant = parseFloat(document.getElementById("montant").value);
+            const description = document.getElementById("description").value;
+
+            if (!montant || montant <= 0) {
+                alert("Veuillez saisir un montant valide");
+                return;
+            }
+
+            if (!description) {
+                alert("Veuillez saisir une description");
+                return;
+            }
+
+            const montantFinal = type === "entree" ? montant : -montant;
+
+            ajax("POST", "/fonds", {
+                montant: montantFinal,
+                description: description
+            }, (response) => {
+                document.getElementById("montant").value = "";
+                document.getElementById("description").value = "";
+                closeModal();
+                chargerHistoriqueFonds();
+            }, (error) => {
+                try {
+                    const errorData = JSON.parse(error.responseText);
+                    if (errorData.error === 'Solde insuffisant') {
+                        alert(`Opération refusée: Solde insuffisant\n` +
+                            `Solde disponible: ${errorData.solde_disponible} Ar\n` +
+                            `Montant demandé: ${errorData.montant_demande} Ar`);
+                    } else {
+                        alert("Erreur: " + errorData.error);
+                    }
+                } catch (e) {
+                    alert("Erreur lors de l'opération");
+                }
+            });
+        }
+
+       
+
+        chargerHistoriqueFonds();
+    </script>
+</body>
+</html>
