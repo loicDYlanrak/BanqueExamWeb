@@ -37,7 +37,7 @@ Filtres (actifs/clôturés, en retard).
 Bouton "Rembourser" pour enregistrer un paiement.
 
 Détail d'un prêt :
-
+    
 Historique des remboursements.
 
 Calcul du reste dû (avec intérêts).
