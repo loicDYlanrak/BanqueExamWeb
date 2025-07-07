@@ -1,12 +1,14 @@
 <?php
-    require 'vendor/autoload.php';
-    require 'controllers/TypePretController.php';
+        require 'vendor/autoload.php';
+        require 'controllers/TypePretController.php';
     require 'db.php';
+    require 'controllers/ClientController.php';
+    require 'controllers/FondController.php';
 
-    // ===== CONFIGURATION CORS =====
+        // ===== CONFIGURATION CORS =====
     header("Access-Control-Allow-Origin: *");
-    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
     // Répondre directement aux requêtes OPTIONS (préflight)
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
