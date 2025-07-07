@@ -74,37 +74,8 @@ class ClientController
         } catch (PDOException $e) {
             Flight::halt(500, json_encode(['error' => 'Erreur de base de données']));
         }
-
-        public static function update($id)
-        {
-            $request = Flight::request();
-            $data = json_decode($request->getBody(), true);
-
-            if (empty($data['nom'])) {
-                Flight::halt(400, json_encode(['error' => 'Le nom est obligatoire']));
-            }
-
-            try {
-                $db = getDB();
-                $stmt = $db->prepare("
-                UPDATE client 
-                SET nom = ?, prenom = ?, telephone = ?, email = ?
-                WHERE id = ?
-            ");
-                $stmt->execute([
-                    $data['nom'],
-                    $data['prenom'] ?? '',
-                    $data['telephone'] ?? '',
-                    $data['email'] ?? '',
-                    $id
-                ]);
-
-                Flight::json(['message' => 'Client mis à jour avec succès']);
-            } catch (PDOException $e) {
-                Flight::halt(500, json_encode(['error' => 'Erreur de base de données']));
-            }
-        }
     }
+ 
     public static function update($id)
     {
         $request = Flight::request();
@@ -134,4 +105,5 @@ class ClientController
             Flight::halt(500, json_encode(['error' => 'Erreur de base de données']));
         }
     }
+    
 }

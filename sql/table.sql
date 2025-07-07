@@ -64,24 +64,24 @@ INSERT INTO type_pret (nom, taux, duree_mois) VALUES
 ('Prêt automobile', 4.25, 60),
 ('Crédit renouvelable', 7.50, 12);
 
-INSERT INTO pret (client_id, type_pret_id, montant, date_debut, duree_mois, est_actif) VALUES
+INSERT INTO pret (client_id, type_pret_id, montant, date_debut, est_actif) VALUES
 -- Prêt 1: En cours, sans retard
-(1, 1, 10000.00, DATE_SUB(CURDATE(), INTERVAL 6 MONTH), 24, TRUE),
+(1, 1, 10000.00, DATE_SUB(CURDATE(), INTERVAL 6 MONTH), TRUE),
 
 -- Prêt 2: En cours, avec 2 mois de retard
-(2, 2, 150000.00, DATE_SUB(CURDATE(), INTERVAL 12 MONTH), 240, TRUE),
+(2, 2, 150000.00, DATE_SUB(CURDATE(), INTERVAL 12 MONTH), TRUE),
 
 -- Prêt 3: Terminé (non actif)
-(3, 3, 20000.00, DATE_SUB(CURDATE(), INTERVAL 60 MONTH), 60, FALSE),
+(3, 3, 20000.00, DATE_SUB(CURDATE(), INTERVAL 60 MONTH), FALSE),
 
 -- Prêt 4: En cours, avec 1 mois de retard
-(4, 1, 5000.00, DATE_SUB(CURDATE(), INTERVAL 3 MONTH), 12, TRUE),
+(4, 1, 5000.00, DATE_SUB(CURDATE(), INTERVAL 3 MONTH), TRUE),
 
 -- Prêt 5: Nouveau prêt, pas encore de retard
-(5, 4, 3000.00, DATE_SUB(CURDATE(), INTERVAL 1 MONTH), 12, TRUE),
+(5, 4, 3000.00, DATE_SUB(CURDATE(), INTERVAL 1 MONTH), TRUE),
 
 -- Prêt 6: En cours, sans retard (mais presque)
-(1, 2, 80000.00, DATE_SUB(CURDATE(), INTERVAL 5 MONTH), 120, TRUE);
+(1, 2, 80000.00, DATE_SUB(CURDATE(), INTERVAL 5 MONTH), TRUE);
 
 -- Remboursements pour le prêt 1 (6 mois, pas de retard)
 INSERT INTO remboursement (pret_id, montant, date_remboursement) VALUES

@@ -12,7 +12,7 @@ class RapportController
             JOIN pret p ON r.pret_id = p.id
             WHERE p.est_actif = TRUE
         ");
-        $stmt->execute();
+        $stmt->execute(); 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         Flight::json([

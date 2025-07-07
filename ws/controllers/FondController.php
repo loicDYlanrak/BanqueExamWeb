@@ -9,7 +9,7 @@
             }
             
             try {
-                $db = getDB();
+                $db = getDB(); 
                 
                 // Vérification du solde pour les sorties
                 if ($data['montant'] < 0) {
