@@ -16,7 +16,8 @@ CREATE TABLE type_pret (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(50) NOT NULL ,
     taux DECIMAL(5, 2) NOT NULL ,
-    duree_mois INT NULL
+    duree_annee INT NULL,
+    assurance DECIMAL(5,2)
 );
 
 -- 3. Table des clients
@@ -46,5 +47,18 @@ CREATE TABLE remboursement (
     pret_id INT NOT NULL,
     montant DECIMAL(10, 2) NOT NULL,
     date_remboursement DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pret_id) REFERENCES pret(id)
+);
+
+CREATE TABLE Mensualite(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    pret_id INT,
+    mois INT,
+    annee INT,
+    interet DECIMAL(10,2),
+    pret DECIMAL(10,2),
+    amortissement DECIMAL(10, 2),
+    mensualite DECIMAL(10,2),
+    valeur_net DECIMAL(10,2),
     FOREIGN KEY (pret_id) REFERENCES pret(id)
 );
