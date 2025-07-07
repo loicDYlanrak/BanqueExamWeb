@@ -4,6 +4,7 @@
     require 'controllers/TypePretController.php';
     require 'controllers/ClientController.php';
     require 'controllers/FondController.php';
+    require 'controllers/RemboursementController.php';
     require 'controllers/PretController.php';
 
         // ===== CONFIGURATION CORS =====
@@ -35,9 +36,17 @@
     Flight::route('DELETE /type_pret/@id', ['TypePretController', 'delete']);
     // Clients
     Flight::route('GET /clients', ['ClientController', 'getAll']);
-
+    
     // Prêts
     Flight::route('POST /prets', ['PretController', 'create']);
+    Flight::route('POST /prets/mensualite', ['PretController', 'prevoirMensualite']);
+
+    // Récupérer les prêts avec filtres GET ?est_actif=1&en_retard=1
+    Flight::route('GET /prets', ['PretController', 'getAllWithFilters']);
+
+    // Effectuer un remboursement POST /rembourser avec { pret_id, montant }
+    Flight::route('POST /rembourser', ['RemboursementController', 'create']);
+
 
     Flight::start();
 ?>

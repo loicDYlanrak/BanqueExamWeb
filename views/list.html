@@ -112,7 +112,7 @@
             prets.forEach(p => {
                 const tr = document.createElement("tr");
 
-                tr.innerHTML = 
+                tr.innerHTML = `
           <td>${p.id}</td>
           <td>${p.nom} ${p.prenom}</td>
           <td>${p.type_nom} (${p.taux}%)</td>
@@ -121,9 +121,9 @@
           <td>${p.est_actif ? "Oui" : "Non"}</td>
           <td>${p.total_rembourse}</td>
           <td>
-            ${p.est_actif ? <button onclick="rembourser(${p.id})">Rembourser</button> : ""}
+            ${p.est_actif ? `<button onclick="rembourser(${p.id})">Rembourser</button>` : ""}
           </td>
-        ;
+        `;
                 tbody.appendChild(tr);
             });
         }
