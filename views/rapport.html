@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Rapports Financiers</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .rapports-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .rapport-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .rapport-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9e9e9;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 150px;
+        }
+
+        .calculator {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-box {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .montant-negatif {
+            color: #e53935;
+            font-weight: bold;
+        }
+
+        .montant-positif {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: white;
+            background-color: #4CAF50;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+
+        .nav a:hover {
+            background-color: #45a049;
+        }
+
+        .filters {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filters div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filters label {
+            font-weight: bold;
+        }
+
+        input[type="month"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #table-interets-mois {
+            margin-top: 15px;
+        }
+
+        #table-interets-mois tfoot {
+            font-weight: bold;
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Rapports Financiers</h1>
+    </div>
+
+    <div class="rapport-section">
+        <h3>Intérêts gagnés par mois</h3>
+
+        <div class="filters">
+            <div>
+                <label>Date début:</label>
+                <input type="month" id="filter-date-debut" onchange="chargerInteretsMois()">
+            </div>
+            <div>
+                <label>Date fin:</label>
+                <input type="month" id="filter-date-fin" onchange="chargerInteretsMois()">
+            </div>
+        </div>
+
+        <table id="table-interets-mois">
+            <thead>
+                <tr>
+                    <th>Mois/Année</th>
+                    <th>Intérêts gagnés</th>
+                    <th>Nombre de prêts</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td><strong>Total</strong></td>
+                    <td id="total-interets">0.00 €</td>
+                    <td id="total-prets">0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="rapports-container">
+        <div class="rapport-section">
+            <h3>Bénéfices Totaux</h3>
+            <div id="benefices-totaux">
+                <p>Chargement en cours...</p>
+            </div>
+            <button onclick="chargerBeneficesTotaux()">Actualiser</button>
+        </div>
+
+        <div class="rapport-section">
+            <h3>Prêts en Retard</h3>
+            <div class="filters">
+                <label>Date de simulation:</label>
+                <input type="month" id="simulation-date" onchange="chargerPretsEnRetard()">
+            </div>
+            <div id="prets-en-retard">
+                <p>Chargement en cours...</p>
+            </div>
+            <button onclick="chargerPretsEnRetard()">Actualiser</button>
+        </div>
+
+        <div class="rapport-section">
+            <h3>Calculateur de Mensualité</h3>
+            <div class="calculator">
+                <input type="number" id="calc-montant" placeholder="Montant" step="0.01">
+                <input type="number" id="calc-taux" placeholder="Taux annuel (%)" step="0.01">
+                <input type="number" id="calc-duree" placeholder="Durée (mois)">
+                <button onclick="calculerMensualite()">Calculer</button>
+            </div>
+            <div id="resultat-mensualite" class="result-box"></div>
+        </div>
+    </div>
+
+
+
+    <script>
+        const apiBase = "http://localhost:8000";
+
+        // Fonction AJAX générique
+        function ajax(method, url, data, callback, errorCallback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open(method, apiBase + url, true);
+
+            if (method === 'POST' || method === 'PUT') {
+                xhr.setRequestHeader("Content-Type", "application/json");
+            }
+
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        callback(JSON.parse(xhr.responseText));
+                    } else if (errorCallback) {
+                        errorCallback(xhr);
+                    } else {
+                        console.error("Error:", xhr.status, xhr.responseText);
+                        alert("Erreur lors de la requête. Voir la console pour les détails.");
+                    }
+                }
+            };
+
+            xhr.send(method === 'GET' ? null : JSON.stringify(data));
+        }
+
+        function chargerBeneficesTotaux() {
+            document.getElementById("benefices-totaux").innerHTML = "<p>Chargement...</p>";
+
+            ajax("GET", "/benefices/totaux", null, (data) => {
+                const element = document.getElementById("benefices-totaux");
+                const montant = parseFloat(data.benefices_totaux || 0);
+                const classe = montant >= 0 ? "montant-positif" : "montant-negatif";
+
+                element.innerHTML = `
+          <p><strong>Bénéfices totaux:</strong> 
+            <span class="${classe}">${montant.toFixed(2)} €</span>
+          </p>
+          <p>Calculés sur l'ensemble des prêts actifs</p>
+        `;
+            }, (error) => {
+                document.getElementById("benefices-totaux").innerHTML =
+                    "<p class='montant-negatif'>Erreur lors du chargement des bénéfices</p>";
+            });
+        }
+
+        // Initialisation des filtres avec la date actuelle
+        document.addEventListener('DOMContentLoaded', function () {
+            const now = new Date();
+            const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+            // Définit la date de fin comme le mois courant
+            document.getElementById('filter-date-fin').value = currentMonth;
+
+            // Définit la date de début comme il y a 12 mois
+            const startDate = new Date(now);
+            startDate.setMonth(startDate.getMonth() - 12);
+            const startMonth = startDate.getFullYear() + '-' + String(startDate.getMonth() + 1).padStart(2, '0');
+            document.getElementById('filter-date-debut').value = startMonth;
+
+            // Date de simulation par défaut = aujourd'hui
+            document.getElementById('simulation-date').value = currentMonth;
+
+            // Charge les données initiales
+            chargerInteretsMois();
+            chargerPretsEnRetard();
+        });
+
+        // Fonction pour charger les intérêts par mois
+        function chargerInteretsMois() {
+            const dateDebut = document.getElementById('filter-date-debut').value;
+            const dateFin = document.getElementById('filter-date-fin').value;
+
+            if (!dateDebut || !dateFin) return;
+
+            ajax("GET", `/benefices/interets-mois?debut=${dateDebut}&fin=${dateFin}`, null, (data) => {
+                const tbody = document.querySelector("#table-interets-mois tbody");
+                tbody.innerHTML = "";
+
+                let totalInterets = 0;
+                let totalPrets = 0;
+
+                data.forEach(item => {
+                    totalInterets += parseFloat(item.interets);
+                    totalPrets += parseInt(item.nombre_prets);
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+        <td>${item.mois}/${item.annee}</td>
+        <td>${parseFloat(item.interets).toFixed(2)} €</td>
+        <td>${item.nombre_prets}</td>
+      `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById("total-interets").textContent = totalInterets.toFixed(2) + " €";
+                document.getElementById("total-prets").textContent = totalPrets;
+            });
+        }
+
+        // Fonction modifiée pour les prêts en retard avec date de simulation
+        function chargerPretsEnRetard() {
+            const simulationDate = document.getElementById('simulation-date').value;
+
+            if (!simulationDate) return;
+
+            ajax("GET", `/benefices/retards?simulation=${simulationDate}`, null, (data) => {
+                const element = document.getElementById("prets-en-retard");
+
+                let html = `
+      <p><strong>Date de simulation:</strong> ${simulationDate}</p>
+      <p><strong>Nombre de prêts en retard:</strong> ${data.nombre_prets_en_retard}</p>
+      <p><strong>Montant total des retards:</strong> ${parseFloat(data.total_retards || 0).toFixed(2)} €</p>
+    `;
+
+                if (data.prets_en_retard.length > 0) {
+                    html += `<table>
+        <tr>
+          <th>Client</th>
+          <th>Prêt ID</th>
+          <th>Mensualité</th>
+          <th>Retards</th>
+          <th>Montant dû</th>
+        </tr>`;
+
+                    data.prets_en_retard.forEach(pret => {
+                        const mensualite = parseFloat(pret.mensualite || 0);
+                        const retards = parseInt(pret.retards || 0);
+                        const montantDu = (mensualite * retards).toFixed(2);
+
+                        html += `
+        <tr>
+          <td>${pret.nom} ${pret.prenom}</td>
+          <td>${pret.id}</td>
+          <td>${mensualite.toFixed(2)} €</td>
+          <td>${retards}</td>
+          <td>${montantDu} €</td>
+        </tr>`;
+                    });
+
+                    html += `</table>`;
+                } else {
+                    html += "<p>Aucun prêt en retard à cette date</p>";
+                }
+
+                element.innerHTML = html;
+            });
+        }
+
+        function calculerMensualite() {
+            const montant = parseFloat(document.getElementById("calc-montant").value);
+            const taux = parseFloat(document.getElementById("calc-taux").value);
+            const duree = parseInt(document.getElementById("calc-duree").value);
+
+            if (!montant || montant <= 0) {
+                alert("Veuillez saisir un montant valide");
+                return;
+            }
+
+            if (!taux || taux <= 0) {
+                alert("Veuillez saisir un taux valide");
+                return;
+            }
+
+            if (!duree || duree <= 0) {
+                alert("Veuillez saisir une durée valide");
+                return;
+            }
+
+            document.getElementById("resultat-mensualite").innerHTML = "<p>Calcul en cours...</p>";
+
+            ajax("POST", "/benefices/calcul-mensualite", {
+                montant: montant,
+                taux: taux,
+                duree_mois: duree
+            }, (data) => {
+                const element = document.getElementById("resultat-mensualite");
+                element.innerHTML = `
+          <h4>Résultat du calcul</h4>
+          <p><strong>Montant du prêt:</strong> ${data.montant} €</p>
+          <p><strong>Taux annuel:</strong> ${data.taux_annuel}%</p>
+          <p><strong>Durée:</strong> ${data.duree_mois} mois (${Math.floor(data.duree_mois / 12)} ans et ${data.duree_mois % 12} mois)</p>
+          <p><strong>Mensualité:</strong> <span class="montant-positif">${data.mensualite} €</span></p>
+          <p><strong>Coût total du crédit:</strong> ${(data.mensualite * data.duree_mois).toFixed(2)} €</p>
+          <p><strong>Intérêts totaux:</strong> ${(data.mensualite * data.duree_mois - data.montant).toFixed(2)} €</p>
+        `;
+            }, (error) => {
+                document.getElementById("resultat-mensualite").innerHTML =
+                    "<p class='montant-negatif'>Erreur lors du calcul de la mensualité</p>";
+            });
+        }
+
+        // Charger les données au démarrage
+        document.addEventListener('DOMContentLoaded', function () {
+            chargerBeneficesTotaux();
+            chargerPretsEnRetard();
+        });
+    </script>
+</body>
+
+</html>
