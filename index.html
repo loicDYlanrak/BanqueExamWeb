@@ -18,16 +18,15 @@
   <div>
     <input type="hidden" id="id">
     <input type="text" id="nom" placeholder="Nom">
-    <input type="text" id="prenom" placeholder="Prénom">
-    <input type="email" id="email" placeholder="Email">
-    <input type="number" id="age" placeholder="Âge">
+    <input type="number" id="taux" placeholder="Taux">
+    <input type="number" id="duree_mois" placeholder="Durée(mois)">
     <button onclick="ajouterOuModifier()">Ajouter / Modifier</button>
   </div>
 
-  <table id="table-etudiants">
+  <table id="table-type-pret">
     <thead>
       <tr>
-        <th>ID</th><th>Nom</th><th>Prénom</th><th>Email</th><th>Âge</th><th>Actions</th>
+        <th>ID</th><th>Nom</th><th>Taux</th><th>Durée(mois)</th><th>Actions</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -49,17 +48,16 @@
     }
 
     function chargerEtudiants() {
-      ajax("GET", "/etudiants", null, (data) => {
-        const tbody = document.querySelector("#table-etudiants tbody");
+      ajax("GET", "/type_pret", null, (data) => {
+        const tbody = document.querySelector("#table-type-pret tbody");
         tbody.innerHTML = "";
         data.forEach(e => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${e.id}</td>
             <td>${e.nom}</td>
-            <td>${e.prenom}</td>
-            <td>${e.email}</td>
-            <td>${e.age}</td>
+            <td>${e.taux}</td>
+            <td>${e.duree_mois}</td>
             <td>
               <button onclick='remplirFormulaire(${JSON.stringify(e)})'>✏️</button>
               <button onclick='supprimerEtudiant(${e.id})'>🗑️</button>
@@ -73,19 +71,19 @@
     function ajouterOuModifier() {
       const id = document.getElementById("id").value;
       const nom = document.getElementById("nom").value;
-      const prenom = document.getElementById("prenom").value;
-      const email = document.getElementById("email").value;
-      const age = document.getElementById("age").value;
+      const taux = document.getElementById("taux").value;
+      const duree_mois = document.getElementById("duree_mois").value;
 
-      const data = `nom=${encodeURIComponent(nom)}&prenom=${encodeURIComponent(prenom)}&email=${encodeURIComponent(email)}&age=${age}`;
+      const data = `nom=${encodeURIComponent(nom)}&taux=${encodeURIComponent(taux)}&duree_mois=${encodeURIComponent(duree_mois)}`;
 
       if (id) {
-        ajax("PUT", `/etudiants/${id}`, data, () => {
+        console.log(data);
+        ajax("PUT", `/type_pret/${id}`, data, () => {
           resetForm();
           chargerEtudiants();
         });
       } else {
-        ajax("POST", "/etudiants", data, () => {
+        ajax("POST", "/type_pret", data, () => {
           resetForm();
           chargerEtudiants();
         });
@@ -95,14 +93,13 @@
     function remplirFormulaire(e) {
       document.getElementById("id").value = e.id;
       document.getElementById("nom").value = e.nom;
-      document.getElementById("prenom").value = e.prenom;
-      document.getElementById("email").value = e.email;
-      document.getElementById("age").value = e.age;
+      document.getElementById("taux").value = e.taux;
+      document.getElementById("duree_mois").value = e.duree_mois;
     }
 
     function supprimerEtudiant(id) {
       if (confirm("Supprimer cet étudiant ?")) {
-        ajax("DELETE", `/etudiants/${id}`, null, () => {
+        ajax("DELETE", `/type_pret/${id}`, null, () => {
           chargerEtudiants();
         });
       }
@@ -111,9 +108,8 @@
     function resetForm() {
       document.getElementById("id").value = "";
       document.getElementById("nom").value = "";
-      document.getElementById("prenom").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("age").value = "";
+      document.getElementById("taux").value = "";
+      document.getElementById("duree_mois").value = "";
     }
 
     chargerEtudiants();

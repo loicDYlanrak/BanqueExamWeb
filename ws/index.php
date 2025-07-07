@@ -2,44 +2,51 @@
 require 'vendor/autoload.php';
 require 'db.php';
 
-header("Access-Control-Allow-Origin: *");
+// === CONFIG CORS ===
+header("Access-Control-Allow-Origin: *"); 
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-Flight::route('GET /etudiants', function() {
-    $db = getDB();
-    $stmt = $db->query("SELECT * FROM etudiant");
+// Gestion requêtes OPTIONS (préflight)
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// Lister tous les types
+Flight::route('GET /type_pret', function () {
+    $stmt = getDB()->query("SELECT * FROM type_pret");
     Flight::json($stmt->fetchAll(PDO::FETCH_ASSOC));
 });
 
-Flight::route('GET /etudiants/@id', function($id) {
-    $db = getDB();
-    $stmt = $db->prepare("SELECT * FROM etudiant WHERE id = ?");
+// Détail d'un type
+Flight::route('GET /type_pret/@id', function ($id) {
+    $stmt = getDB()->prepare("SELECT * FROM type_pret WHERE id = ?");
     $stmt->execute([$id]);
     Flight::json($stmt->fetch(PDO::FETCH_ASSOC));
 });
 
-Flight::route('POST /etudiants', function() {
+// Ajouter un type
+Flight::route('POST /type_pret', function () {
     $data = Flight::request()->data;
-    $db = getDB();
-    $stmt = $db->prepare("INSERT INTO etudiant (nom, prenom, email, age) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$data->nom, $data->prenom, $data->email, $data->age]);
-    Flight::json(['message' => 'Étudiant ajouté', 'id' => $db->lastInsertId()]);
+    $stmt = getDB()->prepare("INSERT INTO type_pret (nom, taux, duree_mois) VALUES (?, ?, ?)");
+    $stmt->execute([$data['nom'], $data['taux'], $data['duree_mois']]);
+    Flight::json(['success' => true]);
 });
 
-Flight::route('PUT /etudiants/@id', function($id) {
-    $data = Flight::request()->data;
-    $db = getDB();
-    $stmt = $db->prepare("UPDATE etudiant SET nom = ?, prenom = ?, email = ?, age = ? WHERE id = ?");
-    $stmt->execute([$data->nom, $data->prenom, $data->email, $data->age, $id]);
-    Flight::json(['message' => 'Étudiant modifié']);
+// Modifier un type
+Flight::route('PUT /type_pret/@id', function ($id) {
+    parse_str(file_get_contents("php://input"), $data);
+    $stmt = getDB()->prepare("UPDATE type_pret SET nom = ?, taux = ?, duree_mois = ? WHERE id = ?");
+    $stmt->execute([$data['nom'], $data['taux'], $data['duree_mois'], $id]);
+    Flight::json(['success' => true]);
 });
 
-Flight::route('DELETE /etudiants/@id', function($id) {
-    $db = getDB();
-    $stmt = $db->prepare("DELETE FROM etudiant WHERE id = ?");
+// Supprimer un type
+Flight::route('DELETE /type_pret/@id', function ($id) {
+    $stmt = getDB()->prepare("DELETE FROM type_pret WHERE id = ?");
     $stmt->execute([$id]);
-    Flight::json(['message' => 'Étudiant supprimé']);
+    Flight::json(['success' => true]);
 });
 
 Flight::start();
