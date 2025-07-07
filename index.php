@@ -1,4 +1,4 @@
 <?php
-  header('Location: views/');
+  header('Location: views/fond.html');
   exit();
 ?>
