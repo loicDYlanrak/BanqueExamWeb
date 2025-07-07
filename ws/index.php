@@ -4,7 +4,6 @@
     require 'controllers/TypePretController.php';
     require 'controllers/ClientController.php';
     require 'controllers/FondController.php';
-    require 'controllers/RemboursementController.php';
     require 'controllers/PretController.php';
 
         // ===== CONFIGURATION CORS =====
@@ -39,10 +38,12 @@
     
     // Prêts
     Flight::route('POST /prets', ['PretController', 'create']);
-    Flight::route('POST /prets/mensualite', ['PretController', 'prevoirMensualite']);
 
     // Récupérer les prêts avec filtres GET ?est_actif=1&en_retard=1
     Flight::route('GET /prets', ['PretController', 'getAllWithFilters']);
+    Flight::route('GET /prets/@id/echeancier', ['PretController', 'getEcheancierById']);
+    Flight::route('GET /prets/@id/annuite', ['PretController', 'genererEcheancierAnnuel']);
+    Flight::route('POST /prets/@id/valider', ['PretController', 'ValiPret']);
 
     // Effectuer un remboursement POST /rembourser avec { pret_id, montant }
     Flight::route('POST /rembourser', ['RemboursementController', 'create']);
