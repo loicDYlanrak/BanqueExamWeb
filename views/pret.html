@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Créer un Prêt</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input, select, button { margin: 5px; padding: 5px; }
+    #message { margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <h1>Créer un Prêt</h1>
+
+  <div>
+    <select id="client_id"></select>
+    <select id="type_pret_id"></select>
+    <input type="number" id="montant" placeholder="Montant">
+    <button onclick="creerPret()">Valider le prêt</button>
+  </div>
+
+  <div id="message"></div>
+
+  <script>
+    const apiBase = "http://localhost:8000";
+
+    function ajax(method, url, data, callback, errorCallback) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, apiBase + url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+          } else {
+            if (errorCallback) errorCallback(xhr);
+          }
+        }
+      };
+      xhr.send(data);
+    }
+
+    function chargerClients() {
+      ajax("GET", "/clients", null, (data) => {
+        const select = document.getElementById("client_id");
+        data.forEach(client => {
+          const opt = document.createElement("option");
+          opt.value = client.id;
+          opt.textContent = `${client.nom} ${client.prenom}`;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    function chargerTypesPret() {
+      ajax("GET", "/type_pret", null, (data) => {
+        const select = document.getElementById("type_pret_id");
+        data.forEach(type => {
+          const opt = document.createElement("option");
+          opt.value = type.id;
+          opt.textContent = `${type.nom} - ${type.taux}%`;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    function creerPret() {
+      const client_id = document.getElementById("client_id").value;
+      const type_pret_id = document.getElementById("type_pret_id").value;
+      const montant = parseFloat(document.getElementById("montant").value);
+
+      if (!client_id || !type_pret_id || isNaN(montant)) {
+        afficherMessage("Veuillez remplir tous les champs.", true);
+        return;
+      }
+
+      const data = `client_id=${client_id}&type_pret_id=${type_pret_id}&montant=${montant}`;
+
+      ajax("POST", "/prets", data, (res) => {
+        afficherMessage(`✅ Prêt créé !<br>
+        ID: ${res.id}<br>
+        Mensualité: ${res.mensualite.toFixed(2)}<br>
+        Durée: ${res.duree_mois} mois`);
+        document.getElementById("montant").value = "";
+      }, (xhr) => {
+        try {
+          const erreur = JSON.parse(xhr.responseText);
+          afficherMessage("❌ Erreur : " + erreur.error, true);
+        } catch (e) {
+          afficherMessage("❌ Erreur inattendue", true);
+        }
+      });
+    }
+
+    function afficherMessage(msg, isError = false) {
+      const div = document.getElementById("message");
+      div.innerHTML = msg;
+      div.style.color = isError ? "red" : "green";
+    }
+
+    // Initialisation
+    chargerClients();
+    chargerTypesPret();
+  </script>
+
+</body>
+</html>

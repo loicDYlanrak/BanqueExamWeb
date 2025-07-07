@@ -5,7 +5,6 @@
     require 'controllers/ClientController.php';
     require 'controllers/FondController.php';
     require 'controllers/PretController.php';
-    require 'controllers/RemboursementController.php';
 
         // ===== CONFIGURATION CORS =====
     header("Access-Control-Allow-Origin: *");
