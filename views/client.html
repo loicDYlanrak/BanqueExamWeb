@@ -1,189 +1,251 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Gestion des Clients</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
-    .form-container { background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-    input, button { margin: 5px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #45a049; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #4CAF50; color: white; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
-    .client-details { display: none; margin-top: 20px; padding: 15px; background-color: #f9f9f9; }
-    .active { display: block; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Clients - FundFlow</title>
+    <link rel="stylesheet" href="assets/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/clients.css">
 </head>
 <body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
 
-  <h1>Gestion des Clients</h1>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-university"></i>
+                FundFlow
+            </a>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="fond.html">Fonds</a></li>
+                <li><a href="loans.html">Prêts</a></li>
+                <li><a href="client.html" class="active">Clients</a></li>
+                <li><a href="reports.html">Rapports</a></li>
+            </ul>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
+        </div>
+    </nav>
 
-  <div class="form-container">
-    <h2>Rechercher un client</h2>
-    <input type="text" id="search" placeholder="Nom, prénom ou téléphone">
-    <button onclick="rechercherClients()">Rechercher</button>
-    
-    <h2>Ajouter un nouveau client</h2>
-    <input type="text" id="nom" placeholder="Nom">
-    <input type="text" id="prenom" placeholder="Prénom">
-    <input type="text" id="telephone" placeholder="Téléphone">
-    <input type="email" id="email" placeholder="Email">
-    <button onclick="ajouterClient()">Ajouter</button>
-  </div>
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Gestion des Clients</h1>
+            <button class="add-client-btn" onclick="toggleForm()">
+                <i class="fas fa-user-plus"></i>
+                Ajouter un Client
+            </button>
+        </div>
 
-  <table id="table-clients">
-    <thead>
-      <tr>
-        <th>ID</th><th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Email</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+        <div class="clients-grid">
+            <div class="clients-main">
+                <div class="search-filters">
+                    <div class="search-row">
+                        <div class="search-group">
+                            <label class="search-label">Rechercher</label>
+                            <input type="text" class="search-input" id="search" placeholder="Nom, prénom ou téléphone..." onkeyup="rechercherClients()">
+                        </div>
+                        <div class="search-group">
+                            <button class="search-btn" onclick="rechercherClients()">
+                                <i class="fas fa-search"></i>
+                                Rechercher
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-  <div id="client-details" class="client-details">
-    <h2>Détails du Client</h2>
-    <div id="client-info"></div>
-    
-    <h3>Prêts du Client</h3>
-    <table id="table-prets">
-      <thead>
-        <tr>
-          <th>ID</th><th>Type</th><th>Montant</th><th>Date début</th><th>Durée (mois)</th><th>Statut</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button onclick="fermerDetails()">Fermer</button>
-  </div>
+                <div class="clients-list">
+                    <div class="list-header">
+                        <h3 class="list-title">Liste des Clients</h3>
+                    </div>
 
-  <script>
-    const apiBase = "http://localhost:8000";
+                    <div id="clientsList"></div>
+                </div>
+            </div>
 
-    // Fonction AJAX générique
-    function ajax(method, url, data, callback, errorCallback) {
-      const xhr = new XMLHttpRequest();
-      xhr.open(method, apiBase + url, true);
-      
-      if (method === 'POST' || method === 'PUT') {
-        xhr.setRequestHeader("Content-Type", "application/json");
-      }
-      
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            callback(JSON.parse(xhr.responseText));
-          } else if (errorCallback) {
-            errorCallback(xhr);
-          } else {
-            console.error("Error:", xhr.status, xhr.responseText);
-          }
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="client-form" id="clientForm">
+                    <h3 class="form-title">Nouveau Client</h3>
+                    <form onsubmit="event.preventDefault(); ajouterClient();">
+                        <div class="form-group">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-input" id="nom" placeholder="Nom du client">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" class="form-input" id="prenom" placeholder="Prénom du client">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-input" id="telephone" placeholder="Numéro de téléphone">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="email" placeholder="Adresse email">
+                        </div>
+
+                        <button type="submit" class="form-button">
+                            <i class="fas fa-user-plus"></i>
+                            Ajouter le Client
+                        </button>
+                    </form>
+                </div>
+
+                <div class="client-details client-form" id="client-details">
+                    <h3 class="form-title">Détails du Client</h3>
+                    <div id="client-info"></div>
+                    <br>
+                    <h4>Prêts du Client</h4>
+                    <div id="client-loans"></div>
+                    <br>
+                    <button class="form-button" onclick="fermerDetails()">
+                        <i class="fas fa-times"></i>
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiBase = "http://localhost:8000";
+
+        function ajax(method, url, data, callback, errorCallback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open(method, apiBase + url, true);
+            
+            if (method === 'POST' || method === 'PUT') {
+                xhr.setRequestHeader("Content-Type", "application/json");
+            }
+            
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        callback(JSON.parse(xhr.responseText));
+                    } else if (errorCallback) {
+                        errorCallback(xhr);
+                    } else {
+                        console.error("Error:", xhr.status, xhr.responseText);
+                        alert("Erreur lors de la requête. Voir la console pour les détails.");
+                    }
+                }
+            };
+            
+            xhr.send(method === 'GET' ? null : JSON.stringify(data));
         }
-      };
-      
-      xhr.send(method === 'GET' ? null : JSON.stringify(data));
-    }
 
-    // Charger la liste des clients
-    function chargerClients(search = '') {
-      const url = search ? `/clients?search=${encodeURIComponent(search)}` : '/clients';
-      
-      ajax("GET", url, null, (data) => {
-        const tbody = document.querySelector("#table-clients tbody");
-        tbody.innerHTML = "";
-        
-        data.forEach(client => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${client.id}</td>
-            <td>${client.nom}</td>
-            <td>${client.prenom}</td>
-            <td>${client.telephone || '-'}</td>
-            <td>${client.email || '-'}</td>
-            <td><button onclick='afficherDetailsClient(${client.id})'>👁️ Détails</button></td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-    }
+        function chargerClients(search = '') {
+            const url = search ? `/clients?search=${encodeURIComponent(search)}` : '/clients';
+            
+            ajax("GET", url, null, (data) => {
+                const clientsList = document.getElementById("clientsList");
+                clientsList.innerHTML = "";
+                
+                data.forEach(client => {
+                    const clientItem = document.createElement("div");
+                    clientItem.className = "client-item";
+                    clientItem.setAttribute("data-name", `${client.nom} ${client.prenom}`);
+                    clientItem.setAttribute("data-phone", client.telephone || '');
+                    clientItem.innerHTML = `
+                        <div class="client-avatar">
+                            ${client.prenom.charAt(0)}${client.nom.charAt(0)}
+                        </div>
+                        <div class="client-info">
+                            <div class="client-name">${client.nom} ${client.prenom}</div>
+                            <div class="client-contact">📞 ${client.telephone || '-'}</div>
+                            <div class="client-email">${client.email || '-'}</div>
+                        </div>
+                        <div class="client-stats">
+                            <button class="form-button" onclick="afficherDetailsClient(${client.id})">
+                                <i class="fas fa-eye"></i>
+                                Détails
+                            </button>
+                        </div>
+                    `;
+                    clientsList.appendChild(clientItem);
+                });
+            });
+        }
 
-    // Afficher les détails d'un client
-    function afficherDetailsClient(id) {
-      ajax("GET", `/clients/${id}`, null, (client) => {
-        // Afficher les infos du client
-        document.getElementById("client-info").innerHTML = `
-          <p><strong>Nom:</strong> ${client.nom} ${client.prenom}</p>
-          <p><strong>Téléphone:</strong> ${client.telephone || '-'}</p>
-          <p><strong>Email:</strong> ${client.email || '-'}</p>
-        `;
-        
-        // Afficher ses prêts
-        const tbody = document.querySelector("#table-prets tbody");
-        tbody.innerHTML = "";
-        
-        client.prets.forEach(pret => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${pret.id}</td>
-            <td>${pret.type_pret}</td>
-            <td>${pret.montant} €</td>
-            <td>${pret.date_debut}</td>
-            <td>${pret.duree_mois}</td>
-            <td>${pret.est_actif ? 'Actif' : 'Clôturé'}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-        
-        // Afficher le panneau de détails
-        document.getElementById("client-details").classList.add("active");
-      });
-    }
+        function afficherDetailsClient(id) {
+            ajax("GET", `/clients/${id}`, null, (client) => {
+                document.getElementById("client-info").innerHTML = `
+                    <div class="client-name">${client.nom} ${client.prenom}</div>
+                    <div class="client-contact">📞 ${client.telephone || '-'}</div>
+                    <div class="client-email">${client.email || '-'}</div>
+                `;
+                
+                const loansList = document.getElementById("client-loans");
+                loansList.innerHTML = "";
+                
+                client.prets.forEach(pret => {
+                    const loanItem = document.createElement("div");
+                    loanItem.className = "client-item";
+                    loanItem.innerHTML = `
+                        <div class="client-info">
+                            <div class="client-name">${pret.type_pret}</div>
+                            <div class="client-contact">Montant: € ${pret.montant}</div>
+                            <div class="client-email">Date début: ${pret.date_debut}</div>
+                            <div class="client-email">Durée: ${pret.duree_mois} mois</div>
+                            <div class="client-email">Statut: ${pret.est_actif ? 'Actif' : 'Clôturé'}</div>
+                        </div>
+                    `;
+                    loansList.appendChild(loanItem);
+                });
+                
+                document.getElementById("client-details").style.display = "block";
+            });
+        }
 
-    // Fermer les détails du client
-    function fermerDetails() {
-      document.getElementById("client-details").classList.remove("active");
-    }
+        function fermerDetails() {
+            document.getElementById("client-details").style.display = "none";
+        }
 
-    // Rechercher des clients
-    function rechercherClients() {
-      const search = document.getElementById("search").value;
-      chargerClients(search);
-    }
+        function rechercherClients() {
+            const search = document.getElementById("search").value;
+            chargerClients(search);
+        }
 
-    // Ajouter un nouveau client
-    function ajouterClient() {
-      const nom = document.getElementById("nom").value;
-      const prenom = document.getElementById("prenom").value;
-      const telephone = document.getElementById("telephone").value;
-      const email = document.getElementById("email").value;
-      
-      if (!nom) {
-        alert("Le nom est obligatoire");
-        return;
-      }
-      
-      ajax("POST", "/clients", {
-        nom, prenom, telephone, email
-      }, () => {
-        // Réinitialiser le formulaire
-        document.getElementById("nom").value = "";
-        document.getElementById("prenom").value = "";
-        document.getElementById("telephone").value = "";
-        document.getElementById("email").value = "";
-        
-        // Recharger la liste
+        function ajouterClient() {
+            const nom = document.getElementById("nom").value;
+            const prenom = document.getElementById("prenom").value;
+            const telephone = document.getElementById("telephone").value;
+            const email = document.getElementById("email").value;
+            
+            if (!nom) {
+                alert("Le nom est obligatoire");
+                return;
+            }
+            
+            ajax("POST", "/clients", {
+                nom, prenom, telephone, email
+            }, () => {
+                document.getElementById("nom").value = "";
+                document.getElementById("prenom").value = "";
+                document.getElementById("telephone").value = "";
+                document.getElementById("email").value = "";
+                chargerClients();
+                toggleForm();
+            }, (error) => {
+                alert("Erreur lors de l'ajout du client");
+                console.error(error);
+            });
+        }
+
+        function toggleForm() {
+            const form = document.getElementById("clientForm");
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        }
+
         chargerClients();
-      }, (error) => {
-        alert("Erreur lors de l'ajout du client");
-        console.error(error);
-      });
-    }
-
-    // Charger les clients au démarrage
-    chargerClients();
-  </script>
-
+    </script>
 </body>
 </html>
