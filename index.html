@@ -1,123 +1,227 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
-  <title>Gestion des étudiants</title>
+  <title>Gestion des fonds</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input, button { margin: 5px; padding: 5px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .form-container {
+      background-color: #f5f5f5;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+
+    input,
+    button,
+    select {
+      margin: 5px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .montant-positif {
+      color: green;
+      font-weight: bold;
+    }
+
+    .montant-negatif {
+      color: red;
+      font-weight: bold;
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+    }
   </style>
 </head>
+
 <body>
 
-  <h1>Gestion des étudiants</h1>
+  <h1>Gestion des fonds</h1>
 
-  <div>
-    <input type="hidden" id="id">
-    <input type="text" id="nom" placeholder="Nom">
-    <input type="text" id="prenom" placeholder="Prénom">
-    <input type="email" id="email" placeholder="Email">
-    <input type="number" id="age" placeholder="Âge">
-    <button onclick="ajouterOuModifier()">Ajouter / Modifier</button>
+  <div class="form-container">
+    <h2>Ajouter une entrée/sortie</h2>
+    <div>
+      <select id="type">
+        <option value="entree">Entrée de fonds</option>
+        <option value="sortie">Sortie de fonds</option>
+      </select>
+      <input type="number" id="montant" placeholder="Montant" step="0.01" min="0">
+      <input type="text" id="description" placeholder="Description">
+      <button onclick="ajouterFonds()">Enregistrer</button>
+    </div>
   </div>
 
-  <table id="table-etudiants">
-    <thead>
-      <tr>
-        <th>ID</th><th>Nom</th><th>Prénom</th><th>Email</th><th>Âge</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div>
+    <h2>Historique des mouvements</h2>
+    <table id="table-fonds">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Montant</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2"><strong>Solde total</strong></td>
+          <td id="solde-total" class="montant-positif">0.00 €</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 
   <script>
     const apiBase = "http://localhost:8000";
 
-    function ajax(method, url, data, callback) {
+    function ajax(method, url, data, successCallback, errorCallback) {
       const xhr = new XMLHttpRequest();
       xhr.open(method, apiBase + url, true);
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+      if (method === 'POST' || method === 'PUT') {
+        xhr.setRequestHeader("Content-Type", "application/json");
+      }
+
       xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          callback(JSON.parse(xhr.responseText));
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            successCallback(JSON.parse(xhr.responseText));
+          } else if (errorCallback) {
+            errorCallback(xhr);
+          } else {
+            console.error("Error:", xhr.status, xhr.responseText);
+            alert("Erreur lors de la requête. Voir la console pour les détails.");
+          }
         }
       };
-      xhr.send(data);
+
+      xhr.send(method === 'GET' ? null : JSON.stringify(data));
     }
 
-    function chargerEtudiants() {
-      ajax("GET", "/etudiants", null, (data) => {
-        const tbody = document.querySelector("#table-etudiants tbody");
+    function chargerHistoriqueFonds() {
+      ajax("GET", "/fonds", null, (data) => {
+        const tbody = document.querySelector("#table-fonds tbody");
         tbody.innerHTML = "";
-        data.forEach(e => {
+
+        let soldeTotal = 0;
+
+        data.forEach(fond => {
+          const isEntree = fond.montant >= 0;
+          soldeTotal += parseFloat(fond.montant);
+
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${e.id}</td>
-            <td>${e.nom}</td>
-            <td>${e.prenom}</td>
-            <td>${e.email}</td>
-            <td>${e.age}</td>
-            <td>
-              <button onclick='remplirFormulaire(${JSON.stringify(e)})'>✏️</button>
-              <button onclick='supprimerEtudiant(${e.id})'>🗑️</button>
+            <td>${new Date(fond.date_ajout).toLocaleString()}</td>
+            <td>${isEntree ? 'Entrée' : 'Sortie'}</td>
+            <td class="${isEntree ? 'montant-positif' : 'montant-negatif'}">
+              ${isEntree ? '+' : '-'} ${Math.abs(fond.montant).toFixed(2)} €
             </td>
+            <td>${fond.description}</td>
           `;
           tbody.appendChild(tr);
         });
+
+        // Mettre à jour le solde total
+        const soldeElement = document.getElementById("solde-total");
+        soldeElement.textContent = soldeTotal.toFixed(2) + " €";
+        soldeElement.className = soldeTotal >= 0 ? "montant-positif" : "montant-negatif";
       });
     }
 
-    function ajouterOuModifier() {
-      const id = document.getElementById("id").value;
-      const nom = document.getElementById("nom").value;
-      const prenom = document.getElementById("prenom").value;
-      const email = document.getElementById("email").value;
-      const age = document.getElementById("age").value;
+    function ajouterFonds() {
+      const type = document.getElementById("type").value;
+      const montant = parseFloat(document.getElementById("montant").value);
+      const description = document.getElementById("description").value;
 
-      const data = `nom=${encodeURIComponent(nom)}&prenom=${encodeURIComponent(prenom)}&email=${encodeURIComponent(email)}&age=${age}`;
-
-      if (id) {
-        ajax("PUT", `/etudiants/${id}`, data, () => {
-          resetForm();
-          chargerEtudiants();
-        });
-      } else {
-        ajax("POST", "/etudiants", data, () => {
-          resetForm();
-          chargerEtudiants();
-        });
+      if (!montant || montant <= 0) {
+        alert("Veuillez saisir un montant valide");
+        return;
       }
-    }
 
-    function remplirFormulaire(e) {
-      document.getElementById("id").value = e.id;
-      document.getElementById("nom").value = e.nom;
-      document.getElementById("prenom").value = e.prenom;
-      document.getElementById("email").value = e.email;
-      document.getElementById("age").value = e.age;
-    }
-
-    function supprimerEtudiant(id) {
-      if (confirm("Supprimer cet étudiant ?")) {
-        ajax("DELETE", `/etudiants/${id}`, null, () => {
-          chargerEtudiants();
-        });
+      if (!description) {
+        alert("Veuillez saisir une description");
+        return;
       }
+
+      const montantFinal = type === "entree" ? montant : -montant;
+
+      ajax("POST", "/fonds", {
+        montant: montantFinal,
+        description: description
+      }, (response) => {
+        // Réinitialiser le formulaire
+        document.getElementById("montant").value = "";
+        document.getElementById("description").value = "";
+
+        // Recharger l'historique
+        chargerHistoriqueFonds();
+      }, (error) => {
+        try {
+          const errorData = JSON.parse(error.responseText);
+          if (errorData.error === 'Solde insuffisant') {
+            alert(`Opération refusée: Solde insuffisant\n` +
+              `Solde disponible: ${errorData.solde_disponible} €\n` +
+              `Montant demandé: ${errorData.montant_demande} €`);
+          } else {
+            alert("Erreur: " + errorData.error);
+          }
+        } catch (e) {
+          alert("Erreur lors de l'opération");
+        }
+      });
     }
 
-    function resetForm() {
-      document.getElementById("id").value = "";
-      document.getElementById("nom").value = "";
-      document.getElementById("prenom").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("age").value = "";
-    }
-
-    chargerEtudiants();
+    // Charger l'historique au démarrage
+    chargerHistoriqueFonds();
   </script>
 
 </body>
+
 </html>
