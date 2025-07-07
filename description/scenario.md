@@ -136,3 +136,25 @@ VALUES (463.12, 'Remboursement prêt ID 1 - mois 1');
 - **Remboursements** : Historique complet pour calculer le solde.  
 
 Cette logique permet de suivre précisément l'argent et les engagements.
+
+
+SELECT 
+            p.id,
+            c.nom,
+            c.prenom,
+            p.montant,
+            p.date_debut,
+            p.duree_mois,
+            tp.nom as type_pret,
+            COUNT(r.id) as remboursements_effectues,
+            TIMESTAMPDIFF(MONTH, p.date_debut, :currentDate) as mois_ecoules,
+            (p.montant / p.duree_mois) as mensualite,
+            (TIMESTAMPDIFF(MONTH, p.date_debut, :currentDate) - COUNT(r.id)) as retards
+        FROM pret p
+        JOIN client c ON p.client_id = c.id
+        JOIN type_pret tp ON p.type_pret_id = tp.id
+        LEFT JOIN remboursement r ON r.pret_id = p.id
+        WHERE p.est_actif = TRUE
+        
+        GROUP BY p.id
+        HAVING retards > 0
