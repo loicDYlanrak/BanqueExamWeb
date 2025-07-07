@@ -1,3 +1,6 @@
+CREATE DATABASE banque CHARACTER SET utf8mb4;
+
+USE banque;
 -- 1. Table des fonds de l'EF (pas besoin de table EF car unique)
 CREATE TABLE fonds (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -9,9 +12,9 @@ CREATE TABLE fonds (
 -- 2. Table des types de prêts
 CREATE TABLE type_pret (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nom VARCHAR(50) NOT NULL (ex: "Prêt véhicule"),
-    taux DECIMAL(5, 2) NOT NULL (ex: 4.5 pour 4.5%),
-    duree_mois INTEGER NULL (ex: 60 pour 5 ans)
+    nom VARCHAR(50) NOT NULL ,
+    taux DECIMAL(5, 2) NOT NULL ,
+    duree_mois INTEGER NULL
 );
 
 -- 3. Table des clients
