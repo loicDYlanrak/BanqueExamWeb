@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rapports - FundFlow</title>
-    <link rel="stylesheet" href="assets/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="assets/css/all.min.css">
     <link rel="stylesheet" href="assets/css/reports.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 <body>
     <div class="floating-shapes">
@@ -38,62 +40,75 @@
         <div class="page-header">
             <h1 class="page-title">Rapports Financiers</h1>
             <div class="action-buttons">
-                <button class="btn btn-secondary" onclick="toggleFilters()">
-                    <i class="fas fa-filter"></i>
-                    Filtrer
-                </button>
-                <button class="btn btn-primary">
+               
+                <!-- <button class="btn btn-primary" onclick="exportPDF()">
                     <i class="fas fa-download"></i>
                     Exporter PDF
-                </button>
+                </button> -->
             </div>
         </div>
 
-        <div class="filters" id="filter-section" style="display: none;">
-
-            <div class="form-group">
-                <label class="form-label">Date début:</label>
-                <input class="form-input" type="month" id="filter-date-debut" onchange="chargerInteretsMois()">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Date fin:</label>
-                <input class="form-input" type="month" id="filter-date-fin" onchange="chargerInteretsMois()">
-            </div>
-        </div>
-        <div class="report-card graph table-section">
-             <h3 class="section-title">
+                <div class="table-section">
+            <h3 class="section-title">
                 <div class="section-icon" style="background: var(--success-color);">
                     <i class="fas fa-chart-line"></i>
                 </div>
                 Bénéfices par Mois et Année
             </h3>
-            <div class="report-content " style="overflow-x: auto;" >
-                <table id="table-interets-mois profit-table">
+            <div class="filters">
+                <div class="form-group">
+                    <label class="form-label">Date début:</label>
+                    <input class="form-input" type="month" id="filter-date-debut" onchange="chargerInteretsMois()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date fin:</label>
+                    <input class="form-input" type="month" id="filter-date-fin" onchange="chargerInteretsMois()">
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="profit-table" id="table-interets-mois">
                     <thead>
                         <tr>
-                            <th>Mois/Année</th>
-                            <th>Intérêts gagnés</th>
-                            <th>Nombre de prêts</th>
+                            <th>Période</th>
+                            <th>Bénéfices</th>
+                            <th>Nombre de Prêts</th>
+
                         </tr>
                     </thead>
                     <tbody></tbody>
                     <tfoot>
                         <tr>
                             <td><strong>Total</strong></td>
-                            <td id="total-interets">0.00 €</td>
-                            <td id="total-prets">0</td>
+                            <td id="total-interets">0.00 Ar</td>
+                            <td id="total-prets-table">0</td>
+
                         </tr>
                     </tfoot>
                 </table>
-                <br><br>
-                <div class="chart-container">
-                    <canvas id="monthlyChart" style="max-height: 180px;"></canvas>
-                </div>
             </div>
         </div>
 
+       
+
         <div class="reports-grid">
-            <div class="report-card">
+         <div class="overdue-section">
+            <h3 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                Prêts en Retard
+            </h3>
+            <div class="filters form-group">
+                <label class="form-label">Date de simulation:</label>
+                <input class="form-input" type="month" id="simulation-date" onchange="chargerPretsEnRetard()">
+            </div>
+            <div class="overdue-list" id="prets-en-retard">
+                <p>Chargement en cours...</p>
+            </div>
+            <button class="btn btn-secondary" onclick="chargerPretsEnRetard()">Actualiser</button>
+        </div>
+
+            <div class="report-card dws">
                 <div class="report-header">
                     <h3 class="report-title">Bénéfices Totaux</h3>
                     <div class="report-icon">
@@ -105,29 +120,16 @@
                 </div>
                 <button class="btn btn-secondary" onclick="chargerBeneficesTotaux()">Actualiser</button>
             </div>
+            
+            
+        </div>
 
-            <div class="report-card">
-                <div class="report-header">
-                    <h3 class="report-title">Prêts en Retard</h3>
-                    <div class="report-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                </div>
-                <div class="report-content">
-                    <div class="filters form-group">
-                        <label class="form-label">Date de simulation:</label>
-                        <input class="form-input" type="month" id="simulation-date" onchange="chargerPretsEnRetard()">
-                        <br>
-                    </div>
-                    <br>
-                    <div id="prets-en-retard">
-                        <p>Chargement en cours...</p>
-                    </div>
-                    <br>
-                    <button class="btn btn-secondary" onclick="chargerPretsEnRetard()">Actualiser</button>
-                </div>
-            </div>
 
+
+
+
+
+        <div class="reports-grid">
             <div class="report-card">
                 <div class="report-header">
                     <h3 class="report-title">Calculateur de Mensualité</h3>
@@ -136,24 +138,34 @@
                     </div>
                 </div>
                 <div class="report-content">
-                    <div class="calculator form-group calculatrice">
+                    <div class="calculator">
                         <input class="form-input" type="number" id="calc-montant" placeholder="Montant" step="0.01">
-                        <input class="form-input" type="number" id="calc-taux" placeholder="Taux annuel (%)" step="0.01">
+                        <input  class="form-input" type="number" id="calc-taux" placeholder="Taux annuel" step="0.01">
                         <input class="form-input" type="number" id="calc-duree" placeholder="Durée (mois)">
-                        <br>
-                        <button class="form-button" onclick="calculerMensualite()">Calculer</button>
+                        <button class="btn btn-primary " onclick="calculerMensualite()">Calculer</button>
                     </div>
                     <div id="resultat-mensualite" class="result-box"></div>
                 </div>
             </div>
-        </div>
 
-        
+            <div class="report-card">
+                <div class="report-header">
+                    <h3 class="report-title">Évolution Mensuelle</h3>
+                    <div class="report-icon">
+                        <i class="fas fa-chart-area"></i>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="monthlyChart" style="max-height: 180px;"></canvas>
+                </div>
+            </div>
+
+           
+        </div>
     </div>
 
     <script>
         const apiBase = "http://localhost:8000";
-        let monthlyChart;
 
         // Fonction AJAX générique
         function ajax(method, url, data, callback, errorCallback) {
@@ -180,10 +192,81 @@
             xhr.send(method === 'GET' ? null : JSON.stringify(data));
         }
 
-        function toggleFilters() {
-            const filterSection = document.getElementById('filter-section');
-            filterSection.style.display = filterSection.style.display === 'none' ? 'flex' : 'none';
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
         }
+
+        // Charger le thème sauvegardé
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            document.getElementById('theme-icon').className = 'fas fa-sun';
+        }
+
+        // Animation des nombres
+        function animateNumbers() {
+            const metrics = document.querySelectorAll('.metric-large, .performance-value');
+            metrics.forEach(metric => {
+                const text = metric.textContent;
+                const number = parseFloat(text.replace(/[Ar,%\s]/g, ''));
+                if (!isNaN(number)) {
+                    let current = 0;
+                    const increment = number / 100;
+                    const isPercentage = text.includes('%');
+                    const isCurrency = text.includes('Ar');
+                    
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= number) {
+                            current = number;
+                            clearInterval(timer);
+                        }
+                        
+                        let displayValue = Math.floor(current);
+                        if (isCurrency) {
+                            displayValue = `Ar ${displayValue.toLocaleString()}`;
+                        } else if (isPercentage) {
+                            displayValue = `${(current).toFixed(1)}%`;
+                        } else if (text.includes('+')) {
+                            displayValue = `+${(current).toFixed(1)}%`;
+                        }
+                        
+                        metric.textContent = displayValue;
+                    }, 20);
+                }
+            });
+        }
+
+        // Initialisation des filtres avec la date actuelle
+        document.addEventListener('DOMContentLoaded', function () {
+            const now = new Date();
+            const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+            document.getElementById('filter-date-fin').value = currentMonth;
+
+            const startDate = new Date(now);
+            startDate.setMonth(startDate.getMonth() - 12);
+            const startMonth = startDate.getFullYear() + '-' + String(startDate.getMonth() + 1).padStart(2, '0');
+            document.getElementById('filter-date-debut').value = startMonth;
+
+            document.getElementById('simulation-date').value = currentMonth;
+
+            chargerBeneficesTotaux();
+            chargerInteretsMois();
+            chargerPretsEnRetard();
+            chargerAnalysePrets();
+        });
 
         function chargerBeneficesTotaux() {
             document.getElementById("benefices-totaux").innerHTML = "<p>Chargement...</p>";
@@ -191,15 +274,34 @@
             ajax("GET", "/benefices/totaux", null, (data) => {
                 const element = document.getElementById("benefices-totaux");
                 const montant = parseFloat(data.benefices_totaux || 0);
-                const classe = montant >= 0 ? "metric-value positive" : "metric-value negative";
+                const classe = montant >= 0 ? "montant-positif" : "montant-negatif";
 
                 element.innerHTML = `
-                    <div class="metric-large">${montant.toFixed(2)} €</div>
-                    <div class="metric-subtitle">Calculés sur l'ensemble des prêts actifs</div>
+                    <div class="metric-large">${montant.toFixed(2)} Ar</div>
+                    
                 `;
+                animateNumbers();
             }, (error) => {
                 document.getElementById("benefices-totaux").innerHTML =
-                    "<p class='metric-value negative'>Erreur lors du chargement des bénéfices</p>";
+                    "<p class='montant-negatif'>Erreur lors du chargement des bénéfices</p>";
+            });
+        }
+
+        function chargerAnalysePrets() {
+            ajax("GET", "/benefices/analyse-prets", null, (data) => {
+                const totalPrets = document.getElementById("total-prets");
+                const analysePrets = document.getElementById("analyse-prets");
+                
+                totalPrets.textContent = data.total_prets || 0;
+                analysePrets.innerHTML = `
+                    <li><span class="metric-label">Prêts personnels</span><span class="metric-value">${data.prets_personnels || 0}</span></li>
+                    <li><span class="metric-label">Prêts immobiliers</span><span class="metric-value">${data.prets_immobiliers || 0}</span></li>
+                    <li><span class="metric-label">Crédits auto</span><span class="metric-value">${data.credits_auto || 0}</span></li>
+                `;
+                animateNumbers();
+            }, (error) => {
+                document.getElementById("analyse-prets").innerHTML =
+                    "<li><span class='montant-negatif'>Erreur lors du chargement</span></li>";
             });
         }
 
@@ -215,8 +317,6 @@
 
                 let totalInterets = 0;
                 let totalPrets = 0;
-                const labels = [];
-                const interetsData = [];
 
                 data.forEach(item => {
                     totalInterets += parseFloat(item.interets);
@@ -225,65 +325,18 @@
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>${item.mois}/${item.annee}</td>
-                        <td class="metric-value profit-amount">${parseFloat(item.interets).toFixed(2)} €</td>
+                        <td class="profit-amount">${parseFloat(item.interets).toFixed(2)} Ar</td>
                         <td>${item.nombre_prets}</td>
+                       
                     `;
                     tbody.appendChild(tr);
-
-                    labels.push(`${item.mois}/${item.annee}`);
-                    interetsData.push(parseFloat(item.interets));
                 });
 
-                document.getElementById("total-interets").textContent = totalInterets.toFixed(2) + " €";
-                document.getElementById("total-prets").textContent = totalPrets;
+                document.getElementById("total-interets").textContent = totalInterets.toFixed(2) + " Ar";
+                document.getElementById("total-prets-table").textContent = totalPrets;
 
-                // Update Chart
-                if (monthlyChart) {
-                    monthlyChart.destroy();
-                }
-
-                const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-                monthlyChart = new Chart(monthlyCtx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Intérêts Gagnés (€)',
-                            data: interetsData,
-                            borderColor: '#ffffff',
-                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#ffffff',
-                            pointBorderColor: '#667eea',
-                            pointBorderWidth: 2,
-                            pointRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: '#ffffff',
-                                    font: { weight: 'bold' }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                ticks: { color: '#ffffff' },
-                                grid: { color: 'rgba(255, 255, 255, 0.2)' }
-                            },
-                            x: {
-                                ticks: { color: '#ffffff' },
-                                grid: { color: 'rgba(255, 255, 255, 0.2)' }
-                            }
-                        }
-                    }
-                });
+                // Mettre à jour le graphique mensuel
+                updateMonthlyChart(data);
             });
         }
 
@@ -295,15 +348,16 @@
             ajax("GET", `/benefices/retards?simulation=${simulationDate}`, null, (data) => {
                 const element = document.getElementById("prets-en-retard");
                 let html = `
-                    <div class="metric-label">Date de simulation: ${simulationDate}</div>
-                    <div class="metric-large">${data.nombre_prets_en_retard}</div>
-                    <div class="metric-subtitle">Prêts en retard</div>
-                    <div class="metric-label">Montant total des retards: ${parseFloat(data.total_retards || 0).toFixed(2)} €</div>
-                    <br>
-                `;
+                <div class="texte-1 form-input">
+                    <p><strong>Date de simulation:</strong> ${simulationDate}</p>
+                    <p><strong>Nombre de prêts en retard:</strong> ${data.nombre_prets_en_retard}</p>
+                
+                    <p><strong>Montant total des retards:</strong> ${parseFloat(data.total_retards || 0).toFixed(2)} Ar</p>
+                </div>
+                    `;
 
                 if (data.prets_en_retard.length > 0) {
-                    html += `<div class="overdue-list">`;
+                    html += `<div class="overdue-list des">`;
                     data.prets_en_retard.forEach(pret => {
                         const mensualite = parseFloat(pret.mensualite || 0);
                         const retards = parseInt(pret.retards || 0);
@@ -312,16 +366,23 @@
                         html += `
                             <div class="overdue-item">
                                 <div class="overdue-client">${pret.nom} ${pret.prenom}</div>
-                                <div class="overdue-amount">€ ${montantDu} en retard</div>
-                                <div class="overdue-days">${retards} mois de retard</div>
+                                <div class="overdue-amount">${montantDu} Ar en retard</div>
+                                <div class="overdue-days">${retards} jours de retard</div>
                             </div>`;
                     });
-                    html += `</div>`;
+                    html += `</div> <br>`;
                 } else {
-                    html += "<p class='metric-value'>Aucun prêt en retard à cette date</p>";
+                    html += "<p>Aucun prêt en retard à cette date</p><br>";
                 }
 
                 element.innerHTML = html;
+
+                document.querySelectorAll('.overdue-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const clientName = item.querySelector('.overdue-client').textContent;
+                        alert(`Contacter ${clientName} pour le recouvrement`);
+                    });
+                });
             });
         }
 
@@ -355,34 +416,128 @@
                 const element = document.getElementById("resultat-mensualite");
                 element.innerHTML = `
                     <h4>Résultat du calcul</h4>
-                    <div class="metric-label">Montant du prêt: ${data.montant} €</div>
-                    <div class="metric-label">Taux annuel: ${data.taux_annuel}%</div>
-                    <div class="metric-label">Durée: ${data.duree_mois} mois (${Math.floor(data.duree_mois / 12)} ans et ${data.duree_mois % 12} mois)</div>
-                    <div class="metric-large metric-value positive">${data.mensualite} €</div>
-                    <div class="metric-label">Coût total du crédit: ${(data.mensualite * data.duree_mois).toFixed(2)} €</div>
-                    <div class="metric-label">Intérêts totaux: ${(data.mensualite * data.duree_mois - data.montant).toFixed(2)} €</div>
+                    <p><strong>Montant du prêt:</strong> ${data.montant} Ar</p>
+                    <p><strong>Taux annuel:</strong> ${data.taux_annuel}%</p>
+                    <p><strong>Durée:</strong> ${data.duree_mois} mois (${Math.floor(data.duree_mois / 12)} ans et ${data.duree_mois % 12} mois)</p>
+                    <p><strong>Mensualité:</strong> <span class="montant-positif">${data.mensualite} Ar</span></p>
+                    <p><strong>Coût total du crédit:</strong> ${(data.mensualite * data.duree_mois).toFixed(2)} Ar</p>
+                    <p><strong>Intérêts totaux:</strong> ${(data.mensualite * data.duree_mois - data.montant).toFixed(2)} Ar</p>
                 `;
             }, (error) => {
                 document.getElementById("resultat-mensualite").innerHTML =
-                    "<p class='metric-value negative'>Erreur lors du calcul de la mensualité</p>";
+                    "<p class='montant-negatif'>Erreur lors du calcul de la mensualité</p>";
             });
         }
 
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function () {
-            const now = new Date();
-            const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        function exportPDF() {
+            alert('Export PDF en cours de développement...');
+        }
 
-            document.getElementById('filter-date-fin').value = currentMonth;
-            const startDate = new Date(now);
-            startDate.setMonth(startDate.getMonth() - 12);
-            const startMonth = startDate.getFullYear() + '-' + String(startDate.getMonth() + 1).padStart(2, '0');
-            document.getElementById('filter-date-debut').value = startMonth;
-            document.getElementById('simulation-date').value = currentMonth;
+        // Mise à jour du graphique mensuel
+        function updateMonthlyChart(data) {
+            const labels = data.map(item => `${item.mois}/${item.annee}`);
+            const profits = data.map(item => parseFloat(item.interets));
 
-            chargerBeneficesTotaux();
-            chargerInteretsMois();
-            chargerPretsEnRetard();
+            monthlyChart.data.labels = labels;
+            monthlyChart.data.datasets[0].data = profits;
+            monthlyChart.update();
+        }
+
+        // Animation des éléments au chargement
+        window.addEventListener('load', () => {
+            animateNumbers();
+            
+            const cards = document.querySelectorAll('.report-card, .performance-card, .overdue-section');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // Parallax effect
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const shapes = document.querySelectorAll('.shape');
+            shapes.forEach((shape, index) => {
+                const speed = 0.5 + (index * 0.1);
+                shape.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // Monthly Evolution Chart
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        const monthlyChart = new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Bénéfices (Ar)',
+                    data: [],
+                    borderColor: '#ffffff',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#667eea',
+                    pointBorderWidth: 2,
+                    pointRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff',
+                            font: { weight: 'bold' }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: { color: '#ffffff' },
+                        grid: { color: 'rgba(255, 255, 255, 0.2)' }
+                    },
+                    x: {
+                        ticks: { color: '#ffffff' },
+                        grid: { color: 'rgba(255, 255, 255, 0.2)' }
+                    }
+                }
+            }
+        });
+
+        // Risk Distribution Chart
+        const riskCtx = document.getElementById('riskChart').getContext('2d');
+        const riskChart = new Chart(riskCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Risque Faible', 'Risque Moyen', 'Risque Élevé'],
+                datasets: [{
+                    data: [78, 20, 2],
+                    backgroundColor: [
+                        '#10b981',
+                        '#f59e0b',
+                        '#ef4444'
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#ffffff',
+                            font: { weight: 'bold' },
+                            padding: 20
+                        }
+                    }
+                }
+            }
         });
     </script>
 </body>

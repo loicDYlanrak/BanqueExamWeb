@@ -420,9 +420,9 @@
   }
 
   .overdue-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      display: flex;
       gap: 1rem;
+      flex-direction: column;
   }
 
   .overdue-item {
@@ -786,4 +786,41 @@
   .profit-table th,
   .profit-table td {
       padding: 0.5rem;
+  }
+
+  /* Ajout de styles pour supporter les nouvelles sections */
+  .filters {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      justify-content: center;
+  }
+
+  .filters label {
+      margin-right: 10px;
+  }
+
+  .calculator {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+  }
+
+  .result-box {
+      padding: 15px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      margin-top: 10px;
+  }
+
+  .montant-positif {
+      color: var(--success-color);
+  }
+
+  .montant-negatif {
+      color: var(--danger-color);
+  }
+
+  .report-card.dws {
+      height: 42%;
   }
