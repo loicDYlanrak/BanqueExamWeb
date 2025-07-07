@@ -1,16 +1,16 @@
-    <?php
+<?php
     require 'vendor/autoload.php';
     require 'controllers/TypePretController.php';
     require 'db.php';
 
-    // === CONFIG CORS ===
-    header("Access-Control-Allow-Origin: *"); 
+    // ===== CONFIGURATION CORS =====
+    header("Access-Control-Allow-Origin: *");
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    header("Access-Control-Allow-Headers: Content-Type, Authorization");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-    // Gestion requêtes OPTIONS (préflight)
+    // Répondre directement aux requêtes OPTIONS (préflight)
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(200);
+        header("HTTP/1.1 200 OK");
         exit();
     }
 
@@ -22,3 +22,4 @@
     Flight::route('DELETE /type_pret/@id', ['TypePretController', 'delete']);
 
     Flight::start();
+?>
