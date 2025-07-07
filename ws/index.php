@@ -1,9 +1,11 @@
 <?php
-        require 'vendor/autoload.php';
-        require 'controllers/TypePretController.php';
     require 'db.php';
+    require 'vendor/autoload.php';
+    require 'controllers/TypePretController.php';
     require 'controllers/ClientController.php';
     require 'controllers/FondController.php';
+    require 'controllers/PretController.php';
+    require 'controllers/RemboursementController.php';
 
         // ===== CONFIGURATION CORS =====
     header("Access-Control-Allow-Origin: *");
@@ -16,12 +18,27 @@
         exit();
     }
 
+    // Routes pour les fonds
+    Flight::route('POST /fonds', ['FondController', 'create']);
+    Flight::route('GET /fonds', ['FondController', 'getAll']);
+    Flight::route('GET /fonds/solde', ['FondController', 'getSolde']);
+
+    // Routes pour les clients
+    Flight::route('GET /clients', ['ClientController', 'getAll']);
+    Flight::route('GET /clients/@id', ['ClientController', 'getById']);
+    Flight::route('POST /clients', ['ClientController', 'create']);
+
     // Lister tous les types
     Flight::route('GET /type_pret', ['TypePretController', 'getAll']);
     Flight::route('GET /type_pret/@id', ['TypePretController', 'getById']);
     Flight::route('POST /type_pret', ['TypePretController', 'create']);
     Flight::route('PUT /type_pret/@id', ['TypePretController', 'update']);
     Flight::route('DELETE /type_pret/@id', ['TypePretController', 'delete']);
+    // Clients
+    Flight::route('GET /clients', ['ClientController', 'getAll']);
+
+    // Prêts
+    Flight::route('POST /prets', ['PretController', 'create']);
 
     Flight::start();
 ?>
