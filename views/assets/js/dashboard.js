@@ -25,7 +25,7 @@
             const statValues = document.querySelectorAll('.stat-value');
             statValues.forEach(stat => {
                 const text = stat.textContent;
-                const number = parseInt(text.replace(/[€,\s]/g, ''));
+                const number = parseInt(text.replace(/[Ar,\s]/g, ''));
                 if (!isNaN(number)) {
                     let current = 0;
                     const increment = number / 100;
@@ -35,8 +35,8 @@
                             current = number;
                             clearInterval(timer);
                         }
-                        stat.textContent = text.includes('€') 
-                            ? `€ ${Math.floor(current).toLocaleString()}`
+                        stat.textContent = text.includes('Ar') 
+                            ? `Ar ${Math.floor(current).toLocaleString()}`
                             : Math.floor(current).toLocaleString();
                     }, 20);
                 }
@@ -71,7 +71,7 @@
             data: {
                 labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
                 datasets: [{
-                    label: 'Bénéfices (€)',
+                    label: 'Bénéfices (Ar)',
                     data: [98000, 105000, 112000, 108000, 115000, 122000, 118000, 125000, 120000, 127000, 124000, 127540],
                     borderColor: '#ffffff',
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',

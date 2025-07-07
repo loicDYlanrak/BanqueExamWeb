@@ -24,7 +24,7 @@
         function animateNumbers() {
             const metrics = document.querySelectorAll('.metric');
             metrics.forEach(metric => {
-                const target = parseInt(metric.textContent.replace(/[€,\s]/g, ''));
+                const target = parseInt(metric.textContent.replace(/[Ar,\s]/g, ''));
                 if (!isNaN(target)) {
                     let current = 0;
                     const increment = target / 100;
@@ -34,8 +34,8 @@
                             current = target;
                             clearInterval(timer);
                         }
-                        metric.textContent = metric.textContent.includes('€') 
-                            ? `€ ${Math.floor(current).toLocaleString()}`
+                        metric.textContent = metric.textContent.includes('Ar') 
+                            ? `Ar ${Math.floor(current).toLocaleString()}`
                             : Math.floor(current).toLocaleString();
                     }, 20);
                 }

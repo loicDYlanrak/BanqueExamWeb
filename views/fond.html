@@ -36,7 +36,7 @@
     <div class="main-content">
         <div class="page-header">
             <h1 class="page-title">Gestion des Fonds</h1>
-            <button class="add-fund-btn" onclick="toggleForm()">
+            <button class="add-fund-btn" onclick="openModal()">
                 <i class="fas fa-plus"></i>
                 Ajouter des Fonds
             </button>
@@ -55,33 +55,37 @@
             </div>
         </div>
 
-        <div class="funds-grid">
-            <div class="fund-form" id="fundForm">
-                <h3 style="margin-bottom: 1.5rem; color: var(--text-color);">Ajouter des Fonds</h3>
-                <form onsubmit="event.preventDefault(); ajouterFonds();">
-                    <div class="form-group">
-                        <label class="form-label">Type d'opération</label>
-                        <select class="form-input" id="type">
-                            <option value="entree">Entrée de fonds</option>
-                            <option value="sortie">Sortie de fonds</option>
-                        </select>
-                    </div>
+        <!-- Modal for fund addition form -->
+        <div class="modal" id="fundModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <div class="">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--text-color);">Ajouter des Fonds</h3>
+                    <form onsubmit="event.preventDefault(); ajouterFonds();">
+                        <div class="form-group">
+                            <label class="form-label">Type d'opération</label>
+                            <select class="form-input" id="type">
+                                <option value="entree">Entrée de fonds</option>
+                                <option value="sortie">Sortie de fonds</option>
+                            </select>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Montant (Ar)</label>
-                        <input type="number" class="form-input" id="montant" placeholder="Entrez le montant" step="0.01" min="0">
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label">Montant (Ar)</label>
+                            <input type="number" class="form-input" id="montant" placeholder="Entrez le montant" step="0.01" min="0">
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-input form-textarea" id="description" placeholder="Description de l'opération..."></textarea>
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input form-textarea" id="description" placeholder="Description de l'opération..."></textarea>
+                        </div>
 
-                    <button type="submit" class="form-button">
-                        <i class="fas fa-plus"></i>
-                        Enregistrer
-                    </button>
-                </form>
+                        <button type="submit" class="form-button">
+                            <i class="fas fa-plus"></i>
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -142,7 +146,7 @@
                             <div class="history-subtitle">${fond.description}</div>
                         </div>
                         <div class="history-amount ${isEntree ? 'income' : 'expense'}">
-                            ${isEntree ? '+' : '-'}€ ${Math.abs(fond.montant).toFixed(2)}
+                            ${isEntree ? '+' : '-'}Ar ${Math.abs(fond.montant).toFixed(2)}
                         </div>
                         <div class="history-date">${new Date(fond.date_ajout).toLocaleString()}</div>
                     `;
@@ -150,7 +154,7 @@
                 });
 
                 const soldeElement = document.getElementById("solde-total");
-                soldeElement.textContent = `€ ${soldeTotal.toFixed(2)}`;
+                soldeElement.textContent = `Ar ${soldeTotal.toFixed(2)}`;
                 soldeElement.className = `summary-value ${soldeTotal >= 0 ? 'montant-positif' : 'montant-negatif'}`;
             });
         }
@@ -178,14 +182,15 @@
             }, (response) => {
                 document.getElementById("montant").value = "";
                 document.getElementById("description").value = "";
+                closeModal();
                 chargerHistoriqueFonds();
             }, (error) => {
                 try {
                     const errorData = JSON.parse(error.responseText);
                     if (errorData.error === 'Solde insuffisant') {
                         alert(`Opération refusée: Solde insuffisant\n` +
-                            `Solde disponible: ${errorData.solde_disponible} €\n` +
-                            `Montant demandé: ${errorData.montant_demande} €`);
+                            `Solde disponible: ${errorData.solde_disponible} Ar\n` +
+                            `Montant demandé: ${errorData.montant_demande} Ar`);
                     } else {
                         alert("Erreur: " + errorData.error);
                     }
@@ -195,10 +200,7 @@
             });
         }
 
-        function toggleForm() {
-            const form = document.getElementById("fundForm");
-            form.style.display = form.style.display === "none" ? "block" : "none";
-        }
+       
 
         chargerHistoriqueFonds();
     </script>

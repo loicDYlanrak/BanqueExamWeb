@@ -54,7 +54,7 @@ Sécurité : Ajouter un système d'authentification pour les gestionnaires.
 
 Calculs :
 
-Exemple de mensualité : Pour un prêt de 10 000€ à 5% sur 2 ans :
-M = [10 000 × (5/12)/100] / [1 − (1 + (5/12)/100)^−24] ≈ 438.71€/mois.
+Exemple de mensualité : Pour un prêt de 10 000Ar à 5% sur 2 ans :
+M = [10 000 × (5/12)/100] / [1 − (1 + (5/12)/100)^−24] ≈ 438.71Ar/mois.
 
 Cette structure couvre l'essentiel tout restant simple. Si besoin d'extensions (garanties, pénalités de retard), on peut ajouter des tables.

@@ -25,12 +25,12 @@
             const metrics = document.querySelectorAll('.metric-large, .performance-value');
             metrics.forEach(metric => {
                 const text = metric.textContent;
-                const number = parseFloat(text.replace(/[€,%\s]/g, ''));
+                const number = parseFloat(text.replace(/[Ar,%\s]/g, ''));
                 if (!isNaN(number)) {
                     let current = 0;
                     const increment = number / 100;
                     const isPercentage = text.includes('%');
-                    const isCurrency = text.includes('€');
+                    const isCurrency = text.includes('Ar');
                     
                     const timer = setInterval(() => {
                         current += increment;
@@ -41,7 +41,7 @@
                         
                         let displayValue = Math.floor(current);
                         if (isCurrency) {
-                            displayValue = `€ ${displayValue.toLocaleString()}`;
+                            displayValue = `Ar ${displayValue.toLocaleString()}`;
                         } else if (isPercentage) {
                             displayValue = `${(current).toFixed(1)}%`;
                         } else if (text.includes('+')) {
@@ -94,7 +94,7 @@
             data: {
                 labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
                 datasets: [{
-                    label: 'Bénéfices (€)',
+                    label: 'Bénéfices (Ar)',
                     data: [98000, 105000, 112000, 108000, 115000, 122000, 118000, 125000, 120000, 127000, 124000, 127540],
                     borderColor: '#ffffff',
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
