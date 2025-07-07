@@ -35,7 +35,6 @@ CREATE TABLE pret (
     type_pret_id INT NOT NULL,
     montant DECIMAL(12, 2) NOT NULL,
     date_debut DATE NOT NULL,
-    duree_mois INT NOT NULL,
     est_actif BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (client_id) REFERENCES client(id),
     FOREIGN KEY (type_pret_id) REFERENCES type_pret(id)
