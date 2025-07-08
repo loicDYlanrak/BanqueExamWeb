@@ -91,6 +91,7 @@
           </div>
           <button class="btn btn-secondary clk" onclick="creerPret()">Valider le prêt</button>
           <div id="mensualite_preview" class="mt-2"></div>
+          <div id="modal-error" class="mt-2"></div>
         </div>
       </div>
     </div>
@@ -210,11 +211,19 @@
         document.getElementById("montant").value = "";
         chargerPrets();
       }, (xhr) => {
-        try {
-          const erreur = JSON.parse(xhr.responseText);
-          afficherMessage(" Erreur : " + erreur.error, true);
-        } catch (e) {
-          afficherMessage(" Erreur inattendue", true);
+        if(xhr.status === 400) {
+          try {
+            const erreur = JSON.parse(xhr.responseText);
+            const div = document.getElementById("modal-error");
+            div.innerHTML = erreur.error;
+            div.style.color = "red";
+          } catch (e) {
+            afficherMessage(" Erreur de format de réponse", true);
+          }
+        } else if (xhr.status === 500) {
+          afficherMessage(" Erreur interne du serveur", true);
+        } else {
+          afficherMessage(" Erreur inconnue", true);
         }
       });
     }

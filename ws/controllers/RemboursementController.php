@@ -60,6 +60,8 @@ class RemboursementController {
             $description = "Remboursement prêt #" . $pret_id;
             $stmt->execute([$montant, $description]);
             
+            $stmt = $db->prepare("INSERT INTO fonds (montant, description) VALUES (?, ?)");
+            $stmt->execute([$montant, $description]);
             // Préparer la réponse
             $response = [
                 'id' => $db->lastInsertId(),

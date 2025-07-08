@@ -10,8 +10,16 @@ class PretController {
             if (empty($data['client_id']) || empty($data['type_pret_id']) || empty($data['montant'])) {
                 Flight::halt(400, json_encode(['error' => 'Données manquantes']));
             }
-
             $db = getDB();
+
+            
+            $stmt = $db->query("SELECT SUM(montant) as solde FROM fonds");
+            $solde = $stmt->fetch(PDO::FETCH_ASSOC)['solde'];
+
+            if ($solde < $data['montant']) {
+                Flight::halt(400, json_encode(['error' => 'Solde insuffisant']));
+            }
+
 
             // Vérifier si le client existe
             $clientStmt = $db->prepare("SELECT id FROM client WHERE id = ?");
@@ -292,6 +300,9 @@ class PretController {
                                 WHERE p.id = ?");
             $stmt->execute([$id]);
             $pret = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $stmt = $db->prepare("INSERT INTO fonds (montant, description) VALUES (?, ?)");
+            $stmt->execute([-$pret['montant'], "Prêt #" . $id]);
 
             if (!$pret) {
                 Flight::halt(404, json_encode(['error' => 'Prêt introuvable']));
