@@ -83,5 +83,29 @@ class RemboursementController {
             Flight::halt(500, json_encode(['error' => 'Erreur de base de données: ' . $e->getMessage()]));
         }
     }
+
+    public static function getByPretId($pretId) {
+        try {
+            $db = getDB();
+            $stmt = $db->prepare("
+                SELECT r.*, m.valeur_net 
+                FROM remboursement r
+                LEFT JOIN mensualite m ON r.pret_id = m.pret_id 
+                    AND MONTH(r.date_remboursement) = m.mois 
+                    AND YEAR(r.date_remboursement) = m.annee
+                WHERE r.pret_id = ?
+                ORDER BY r.date_remboursement
+            ");
+
+            $stmt->execute([$pretId]);
+            $resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Retourner les résultats au format JSON
+            Flight::json($resultats);
+            
+        } catch (PDOException $e) {
+            Flight::halt(500, json_encode(['error' => 'Erreur de base de données: ' . $e->getMessage()]));
+        }
+    }
 }
 ?>  

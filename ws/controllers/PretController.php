@@ -334,7 +334,45 @@ class PretController {
         }
     }
 
-
+    public static function getById($id) {
+    try {
+        $db = getDB();
+        
+        $stmt = $db->prepare("
+            SELECT p.*, 
+                   c.nom, c.prenom,
+                   tp.nom as type_nom, tp.taux, tp.duree_annee
+            FROM pret p
+            JOIN client c ON p.client_id = c.id
+            JOIN type_pret tp ON p.type_pret_id = tp.id
+            WHERE p.id = ?
+        ");
+        $stmt->execute([$id]);
+        
+        $pret = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$pret) {
+            Flight::halt(404, json_encode(['error' => 'Prêt non trouvé']));
+        }
+        
+        // Calculer le total remboursé
+        $stmtRemb = $db->prepare("
+            SELECT COALESCE(SUM(montant), 0) as total_rembourse 
+            FROM remboursement 
+            WHERE pret_id = ?
+        ");
+        $stmtRemb->execute([$id]);
+        $remboursement = $stmtRemb->fetch(PDO::FETCH_ASSOC);
+        
+        $pret['total_rembourse'] = $remboursement['total_rembourse'];
+        
+        Flight::json($pret);
+        
+    } catch (PDOException $e) {
+        error_log("Erreur base de données: " . $e->getMessage());
+        Flight::halt(500, json_encode(['error' => 'Erreur serveur']));
+    }
+}
 
 }
 ?>

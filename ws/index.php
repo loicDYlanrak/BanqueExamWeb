@@ -47,7 +47,8 @@
     
     // Prêts
     Flight::route('POST /prets', ['PretController', 'create']);
-
+    // Ajoutez cette ligne avec les autres routes pour les prêts
+    Flight::route('GET /prets/@id', ['PretController', 'getById']);
     // Récupérer les prêts avec filtres GET ?est_actif=1&en_retard=1
     Flight::route('GET /prets', ['PretController', 'getAllWithFilters']);
     Flight::route('GET /prets/@id/echeancier', ['PretController', 'getEcheancierById']);
@@ -56,6 +57,7 @@
 
     // Effectuer un remboursement POST /rembourser avec { pret_id, montant }
     Flight::route('POST /rembourser', ['RemboursementController', 'create']);
+    Flight::route('GET /remboursements/pret/@id', ['RemboursementController', 'getByPretId']);
 
 
     Flight::start();

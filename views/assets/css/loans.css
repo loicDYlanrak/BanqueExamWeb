@@ -704,6 +704,7 @@ table#table-type-pret {
     margin: 1.75rem auto;
     max-width: 90%;
     width: auto;
+        margin-top: 36px;
 }
 
 .modal-xl {
@@ -745,7 +746,7 @@ table#table-type-pret {
     position: relative;
     padding: 1rem;
     overflow-y: auto;
-    max-height: 70vh;
+    max-height: 84vh;
 }
 
 .modal-dialog-scrollable .modal-body {
@@ -820,3 +821,34 @@ button.btn.btn-secondary.clk {
     border: 1px solid #00800000;
     background-color: #00800021;
 }
+
+button.btn.btn-secondary.clke {
+    border: 2px solid #1e293b4f;
+}
+
+ .compare-mode .loan-item {
+      position: relative;
+    }
+
+    .compare-mode .loan-item input[type="checkbox"] {
+      left: 10px;
+      top: 10px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .compare-modal-content {
+      display: flex;
+      gap: 20px;
+    }
+
+    .compare-column {
+      flex: 1;
+    }
+
+    .compare-summary {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }

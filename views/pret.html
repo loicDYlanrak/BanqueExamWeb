@@ -38,7 +38,7 @@
     <div class="page-header">
       <h1 class="page-title">Gestion des Prêts</h1>
     </div>
-    <div id="message" class="mt-2"></div>
+    <div id="message" class="mt-2" style="display: none;"></div>
     <br>
     <div class="filters-section">
       <div class="filters-grid">
@@ -64,6 +64,7 @@
         <div class="loans-list">
           <div class="list-header">
             <h3 class="list-title">Liste des Prêts</h3>
+            <button class="btn btn-secondary clke" onclick="toggleCompareMode()">Comparer 2 simulations</button>
           </div>
           <div id="loansList"></div>
         </div>
@@ -90,7 +91,6 @@
           </div>
           <button class="btn btn-secondary clk" onclick="creerPret()">Valider le prêt</button>
           <div id="mensualite_preview" class="mt-2"></div>
-          <div id="message"></div>
         </div>
       </div>
     </div>
@@ -119,7 +119,31 @@
           </table>
           <br>
           <div class="text-end mt-3">
-            <button id="btn-valider-pret" class="btn btn-primary">✅ Valider définitivement le prêt</button>
+            <button id="btn-valider-pret" class="btn btn-primary"> Valider définitivement le prêt</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalCompare" tabindex="-1" aria-labelledby="compareLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="compareLabel">Comparaison des Prêts</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="compare-modal-content">
+            <div class="compare-column" id="compare-pret-1">
+              <!-- Contenu du premier prêt -->
+            </div>
+            <div class="compare-column" id="compare-pret-2">
+              <!-- Contenu du deuxième prêt -->
+            </div>
+          </div>
+          <div class="compare-summary" id="compare-summary">
+            <!-- Résumé de la comparaison -->
           </div>
         </div>
       </div>
@@ -127,6 +151,7 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="assets/js/loans.js"></script>
+  <script src="assets/js/compare.js"></script>
   <script>
     const apiBase = "http://localhost:8000";
     let currentPretId = null;
@@ -181,15 +206,15 @@
       }
       const data = `client_id=${client_id}&type_pret_id=${type_pret_id}&montant=${montant}&date_debut=${date_debut}`;
       ajax("POST", "/prets", data, (res) => {
-        afficherMessage(`✅ Prêt créé !<br>ID: ${res.id}<br>Mensualité: ${res.mensualite}<br>Durée: ${res.duree_mois} mois`);
+        afficherMessage(` Prêt créé !<br>ID: ${res.id}<br>Mensualité: ${res.mensualite}<br>Durée: ${res.duree_mois} mois`);
         document.getElementById("montant").value = "";
         chargerPrets();
       }, (xhr) => {
         try {
           const erreur = JSON.parse(xhr.responseText);
-          afficherMessage("❌ Erreur : " + erreur.error, true);
+          afficherMessage(" Erreur : " + erreur.error, true);
         } catch (e) {
-          afficherMessage("❌ Erreur inattendue", true);
+          afficherMessage(" Erreur inattendue", true);
         }
       });
     }
@@ -237,12 +262,12 @@
       if (!currentPretId) return;
       if (!confirm("Valider ce prêt et générer les mensualités ?")) return;
       ajax("POST", `/prets/${currentPretId}/valider`, "", (res) => {
-        alert("✅ Prêt validé avec succès !");
+        alert(" Prêt validé avec succès !");
         chargerPrets();
         const modal = bootstrap.Modal.getInstance(document.getElementById("modalEcheancier"));
         modal.hide();
       }, (xhr) => {
-        alert("❌ Erreur : " + xhr.responseText);
+        alert(" Erreur : " + xhr.responseText);
       });
     });
     function showPaymentForm(pretId) {
@@ -286,7 +311,7 @@
       }
 
       ajax("POST", "/rembourser", data, (response) => {
-        afficherMessage("✅ " + response.message);
+        afficherMessage(" " + response.message);
 
         if (response.notification) {
           afficherMessage("ℹ️ " + response.notification.message);
@@ -297,40 +322,57 @@
         currentPaymentPretId = null;
         chargerPrets();
       }, (error) => {
-        afficherMessage("❌ Erreur lors du remboursement.", true);
+        afficherMessage(" Erreur lors du remboursement.", true);
       });
     }
     function afficherPrets(prets) {
       const loansList = document.getElementById("loansList");
       loansList.innerHTML = "";
+
+      // Vérifier si on est en mode comparaison
+      const isCompareMode = document.querySelector(".clke").classList.contains("active");
+
       prets.forEach(p => {
         const div = document.createElement("div");
         div.className = `loan-item ${p.est_actif ? 'active' : 'pending'} ${p.en_retard ? 'overdue' : ''}`;
         div.setAttribute("data-status", p.est_actif ? "active" : "pending");
         div.setAttribute("data-type", p.type_nom.toLowerCase().replace(" ", ""));
         div.setAttribute("data-amount", p.montant);
+
+        // Ajouter la checkbox seulement en mode comparaison et pour les prêts non actifs
+        const checkbox = isCompareMode && !p.est_actif ?
+          `<input type="checkbox" class="compare-checkbox" data-pret-id="${p.id}" onchange="updateCompareButton()">` : '';
+
         div.innerHTML = `
-          <div class="loan-icon ${p.type_nom.toLowerCase().replace(" ", "")}">
-            <i class="fas ${p.type_nom.toLowerCase().includes('auto') ? 'fa-car' : p.type_nom.toLowerCase().includes('immobilier') ? 'fa-home' : 'fa-user'}"></i>
-          </div>
-          <div class="loan-details">
-            <div class="loan-client">${p.nom} ${p.prenom}</div>
-            <div class="loan-type">${p.type_nom} (${p.taux}%)</div>
-            <div class="loan-date">Accordé le ${new Date(p.date_debut).toLocaleDateString()}</div>
-          </div>
-          <div class="loan-amount">
-            <div class="loan-total">Ar ${p.montant}</div>
-            <div class="loan-remaining">Reste: Ar ${p.montant - p.total_rembourse}</div>
-            <div class="loan-status ${p.est_actif ? 'active' : 'pending'} ${p.en_retard ? 'overdue' : ''}">${p.est_actif ? (p.en_retard ? 'En retard' : 'Actif') : 'Clôturé'}</div>
-            <div class="loan-actions">
-              ${p.est_actif ? `<button class="action-btn pay" onclick="showPaymentForm(${p.id})">Payer</button>` : ""}
-              <button class="action-btn view" onclick="voirEcheancier(${p.id})">Échéancier</button>
-              <button class="action-btn pdf" onclick="genererPDF(${p.id})">Exporter PDF</button>
-            </div>
-          </div>
-        `;
+           ${checkbox}
+
+      <div class="loan-icon ${p.type_nom.toLowerCase().replace(" ", "")}">
+
+        <i class="fas ${p.type_nom.toLowerCase().includes('auto') ? 'fa-car' : p.type_nom.toLowerCase().includes('immobilier') ? 'fa-home' : 'fa-user'}"></i>
+      </div>
+      <div class="loan-details">
+        <div class="loan-client">${p.nom} ${p.prenom}</div>
+        <div class="loan-type">${p.type_nom} (${p.taux}%)</div>
+        <div class="loan-date">Accordé le ${new Date(p.date_debut).toLocaleDateString()}</div>
+      </div>
+      <div class="loan-amount">
+        <div class="loan-total">Ar ${p.montant}</div>
+        <div class="loan-remaining">Reste: Ar ${p.montant - p.total_rembourse}</div>
+        <div class="loan-status ${p.est_actif ? 'active' : 'pending'} ${p.en_retard ? 'overdue' : ''}">${p.est_actif ? (p.en_retard ? 'En retard' : 'Actif') : 'En simulation'}</div>
+        <div class="loan-actions">
+          ${p.est_actif ? `<button class="action-btn pay" onclick="showPaymentForm(${p.id})">Payer</button>` : ""}
+          <button class="action-btn view" onclick="voirEcheancier(${p.id})">Échéancier</button>
+          <button class="action-btn pdf" onclick="genererPDF(${p.id})">Exporter PDF</button>
+
+        </div>
+      </div>
+    `;
         loansList.appendChild(div);
       });
+
+      if (isCompareMode) {
+        updateCompareButton();
+      }
     }
     function genererPDF(pretId) {
       const pret = trouverPretDansListe(pretId);
@@ -338,26 +380,48 @@
         alert("Impossible de trouver les détails du prêt.");
         return;
       }
-      ajax("GET", `/prets/${pretId}/echeancier`, null, (echeancier) => {
+
+      // Récupérer à la fois l'échéancier et les remboursements
+      Promise.all([
+        new Promise((resolve) => {
+          ajax("GET", `/prets/${pretId}/echeancier`, null, resolve, () => {
+            alert("Erreur lors de la récupération de l'échéancier.");
+          });
+        }),
+        new Promise((resolve) => {
+          ajax("GET", `/remboursements/pret/${pretId}`, null, resolve, () => {
+            alert("Erreur lors de la récupération des remboursements.");
+          });
+        })
+      ]).then(([echeancier, remboursements]) => {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = 'generer_pdf.php';
         form.target = '_blank';
+
         const pretInput = document.createElement('input');
         pretInput.type = 'hidden';
         pretInput.name = 'pret_data';
         pretInput.value = JSON.stringify(pret);
         form.appendChild(pretInput);
+
         const echeancierInput = document.createElement('input');
         echeancierInput.type = 'hidden';
         echeancierInput.name = 'echeancier_data';
         echeancierInput.value = JSON.stringify(echeancier);
         form.appendChild(echeancierInput);
+
+        const remboursementsInput = document.createElement('input');
+        remboursementsInput.type = 'hidden';
+        remboursementsInput.name = 'remboursements_data';
+        remboursementsInput.value = JSON.stringify(remboursements);
+        form.appendChild(remboursementsInput);
+
         document.body.appendChild(form);
         form.submit();
         document.body.removeChild(form);
-      }, () => {
-        alert("Erreur lors de la récupération de l'échéancier.");
+      }).catch(error => {
+        alert("Erreur lors de la génération du PDF: " + error);
       });
     }
     function trouverPretDansListe(pretId) {
@@ -376,7 +440,7 @@
                 taux: parseFloat(item.querySelector('.loan-type').textContent.match(/\((\d+\.?\d*)%\)/)[1]),
                 montant: parseFloat(item.querySelector('.loan-total').textContent.replace('Ar ', '').replace(',', '')),
                 date_debut: new Date(item.querySelector('.loan-date').textContent.replace('Accordé le ', '')).toISOString().split('T')[0],
-                duree_mois: 0,
+                duree_mois: 36,
                 est_actif: item.querySelector('.loan-status').textContent === 'Actif',
                 total_rembourse: parseFloat(item.querySelector('.loan-total').textContent.replace('Ar ', '')) -
                   parseFloat(item.querySelector('.loan-remaining').textContent.replace('Reste: Ar ', ''))

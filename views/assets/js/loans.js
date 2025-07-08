@@ -126,9 +126,6 @@
     modalDialogs.forEach(dialog => {
         const modal = dialog.closest('.modal');
         modal.addEventListener('show.bs.modal', function () {
-            const modalHeight = dialog.offsetHeight;
-            const windowHeight = window.innerHeight;
-            dialog.style.marginTop = `${(windowHeight - modalHeight) / 2}px`;
         });
     });
 
@@ -136,9 +133,7 @@
     window.addEventListener('resize', function () {
         modalDialogs.forEach(dialog => {
             if (dialog.closest('.modal.show')) {
-                const modalHeight = dialog.offsetHeight;
-                const windowHeight = window.innerHeight;
-                dialog.style.marginTop = `${(windowHeight - modalHeight) / 2}px`;
+                
             }
         });
     });

@@ -54,6 +54,31 @@ class PDF extends FPDF
         $this->Cell(array_sum($w), 0, '', 'T');
     }
     
+    function CreateRemboursementsTable($header, $data)
+    {
+        // Largeurs des colonnes
+        $w = array(50, 50, 50);
+        // En-tête
+        foreach($header as $key => $col) {
+            $header[$key] = iconv('UTF-8', 'ISO-8859-1', $col);
+        }
+        
+        for($i = 0; $i < count($header); $i++)
+            $this->Cell($w[$i], 7, $header[$i], 1, 0, 'C');
+        $this->Ln();
+        
+        // Données
+        foreach($data as $row)
+        {
+            $this->Cell($w[0], 6, date('d/m/Y', strtotime($row['date_remboursement'])), 1);
+            $this->Cell($w[1], 6, $this->formatAriary($row['montant']), 1, 0, 'R');
+            $this->Cell($w[2], 6, isset($row['valeur_net']) ? $this->formatAriary($row['valeur_net']) : '-', 1, 0, 'R');
+            $this->Ln();
+        }
+        // Trait de terminaison
+        $this->Cell(array_sum($w), 0, '', 'T');
+    }
+    
     // Fonction pour formater les nombres en Ariary
     function formatAriary($amount)
     {
@@ -64,12 +89,13 @@ class PDF extends FPDF
 // Récupérer les données POST
 $pretData = json_decode($_POST['pret_data'], true);
 $echeancierData = json_decode($_POST['echeancier_data'], true);
+$remboursementsData = json_decode($_POST['remboursements_data'], true);
 
 // Créer le PDF
 $pdf = new PDF();
 $pdf->AliasNbPages();
 
-// Ajouter une page avec les détails du prêt
+// Première page - Détails du prêt
 $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', 'Fiche du Prêt #') . $pretData['id'], 0, 1);
@@ -89,6 +115,36 @@ $pdf->Cell(0, 10, $pretData['duree_mois'] . ' ' . iconv('UTF-8', 'ISO-8859-1', '
 $pdf->Cell(40, 10, iconv('UTF-8', 'ISO-8859-1', 'Statut:'));
 $pdf->Cell(0, 10, $pretData['est_actif'] ? iconv('UTF-8', 'ISO-8859-1', 'Actif') : iconv('UTF-8', 'ISO-8859-1', 'Clôturé'), 0, 1);
 $pdf->Ln(15);
+
+
+
+$pdf->SetFont('Arial', 'B', 14);
+$pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', 'Historique des remboursements'), 0, 1);
+$pdf->Ln(5);
+
+if (!empty($remboursementsData)) {
+    $headerRemboursements = array('Date', 'Montant', 'Reste après paiement');
+    $pdf->CreateRemboursementsTable($headerRemboursements, $remboursementsData);
+    
+    // Calcul du total remboursé
+    $totalRembourse = array_sum(array_column($remboursementsData, 'montant'));
+    
+    // Calcul du reste à payer
+    $lastRemboursement = end($remboursementsData);
+    $resteAPayer = isset($lastRemboursement['valeur_net']) ? $lastRemboursement['valeur_net'] : ($pretData['montant'] - $totalRembourse);
+    
+    $pdf->Ln(10);
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', 'Total remboursé: ') . $pdf->formatAriary($totalRembourse), 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', 'Reste à payer: ') . $pdf->formatAriary($resteAPayer), 0, 1);
+} else {
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', 'Aucun remboursement effectué pour ce prêt.'), 0, 1);
+    
+    $pdf->Ln(10);
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', 'Montant total à rembourser: ') . $pdf->formatAriary($pretData['montant']), 0, 1);
+}
 
 // Ajouter l'échéancier
 $pdf->SetFont('Arial', 'B', 14);
