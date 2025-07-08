@@ -44,7 +44,7 @@ class RapportController
             SUM(m.interet) as interets_theoriques,
             SUM(
                 CASE WHEN r.id IS NOT NULL THEN 
-                    (r.montant - (m.amortissement + (p.montant * tp.assurance/100/12)))
+                    GREATEST(r.montant - (m.amortissement + (m.valeur_net * tp.assurance/100/12)), 0)
                 ELSE 
                     0 
                 END
