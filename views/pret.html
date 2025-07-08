@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Prêts - FundFlow</title>
+  <link rel="stylesheet" href="assets/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/loans.css">
+</head>
+
+<body>
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <i class="fas fa-university"></i>
+        FundFlow
+      </a>
+      <ul class="nav-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="funds.html">Fonds</a></li>
+        <li><a href="loans.html" class="active">Prêts</a></li>
+        <li><a href="clients.html">Clients</a></li>
+        <li><a href="reports.html">Rapports</a></li>
+      </ul>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon" id="theme-icon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">Gestion des Prêts</h1>
+
+    </div>
+
+    <div class="filters-section">
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label class="filter-label">Statut</label>
+          <select id="filtre_actif" class="filter-select" onchange="chargerPrets()">
+            <option value="">Tous</option>
+            <option value="1">Actifs</option>
+            <option value="0">Clôturés</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Retard</label>
+          <select id="filtre_retard" class="filter-select" onchange="chargerPrets()">
+            <option value="">Tous</option>
+            <option value="1">En retard</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="loans-grid change">
+      <div class="loans-main">
+        <div class="loans-list">
+          <div class="list-header">
+            <h3 class="list-title">Liste des Prêts</h3>
+          </div>
+          <div id="loansList"></div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="loan-types fomu">
+          <h3 class="types-title">Créer un Prêt</h3>
+          <div class="filter-group">
+            <label class="filter-label">Client</label>
+            <select id="client_id" class="filter-select"></select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Type de Prêt</label>
+            <select id="type_pret_id" class="filter-select"></select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Montant</label>
+            <input type="number" id="montant" placeholder="Montant" class="filter-select">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Date de début</label>
+            <input type="date" id="date_debut" class="filter-select">
+          </div>
+          <button class="btn btn-primary" onclick="creerPret()">Valider le prêt</button>
+          <div id="mensualite_preview" class="mt-2"></div>
+          <div id="message"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Bootstrap pour l’échéancier annuel -->
+  <div class="modal fade" id="modalEcheancier" tabindex="-1" aria-labelledby="echeancierLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="echeancierLabel">Échéancier Annuel du Prêt</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <table class="table table-striped table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Année</th>
+                <th>Capital</th>
+                <th>Intérêt</th>
+                <th>Assurance</th>
+                <th>Annuité</th>
+                <th>Reste à payer</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-echeancier"></tbody>
+          </table>
+          <br>
+          <div class="text-end mt-3">
+
+            <button id="btn-valider-pret" class="btn btn-secondary">✅ Valider définitivement le prêt</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const apiBase = "http://localhost:8000";
+    let currentPretId = null;
+
+    function ajax(method, url, data, callback, errorCallback) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, apiBase + url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+          } else {
+            if (errorCallback) errorCallback(xhr);
+          }
+        }
+      };
+      xhr.send(data);
+    }
+
+    function chargerClients() {
+      ajax("GET", "/clients", null, (data) => {
+        const select = document.getElementById("client_id");
+        select.innerHTML = "";
+        data.forEach(client => {
+          const opt = document.createElement("option");
+          opt.value = client.id;
+          opt.textContent = `${client.nom} ${client.prenom}`;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    function chargerTypesPret() {
+      ajax("GET", "/type_pret", null, (data) => {
+        const select = document.getElementById("type_pret_id");
+        select.innerHTML = "";
+        data.forEach(type => {
+          const opt = document.createElement("option");
+          opt.value = type.id;
+          opt.textContent = `${type.nom} - ${type.taux}%`;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    function creerPret() {
+      const client_id = document.getElementById("client_id").value;
+      const type_pret_id = document.getElementById("type_pret_id").value;
+      const montant = parseFloat(document.getElementById("montant").value);
+      const date_debut = document.getElementById("date_debut").value;
+
+      if (!client_id || !type_pret_id || isNaN(montant)) {
+        afficherMessage("Veuillez remplir tous les champs.", true);
+        return;
+      }
+
+      const data = `client_id=${client_id}&type_pret_id=${type_pret_id}&montant=${montant}&date_debut=${date_debut}`;
+
+      ajax("POST", "/prets", data, (res) => {
+        afficherMessage(`✅ Prêt créé !<br>ID: ${res.id}<br>Mensualité: ${res.mensualite}<br>Durée: ${res.duree_mois} mois`);
+        document.getElementById("montant").value = "";
+        chargerPrets();
+      }, (xhr) => {
+        try {
+          const erreur = JSON.parse(xhr.responseText);
+          afficherMessage("❌ Erreur : " + erreur.error, true);
+        } catch (e) {
+          afficherMessage("❌ Erreur inattendue", true);
+        }
+      });
+    }
+
+    function afficherMessage(msg, isError = false) {
+      const div = document.getElementById("message");
+      div.innerHTML = msg;
+      div.style.color = isError ? "red" : "green";
+    }
+
+    function chargerPrets() {
+      const actif = document.getElementById("filtre_actif").value;
+      const retard = document.getElementById("filtre_retard").value;
+
+      let url = "/prets?";
+      if (actif !== "") url += "est_actif=" + actif + "&";
+      if (retard === "1") url += "en_retard=1&";
+
+      ajax("GET", url, null, afficherPrets, () => {
+        alert("Erreur lors du chargement des prêts.");
+      });
+    }
+
+    function voirEcheancier(pretId) {
+      currentPretId = pretId;
+      ajax("GET", `/prets/${pretId}/annuite`, null, (data) => {
+        const tbody = document.getElementById("tbody-echeancier");
+        tbody.innerHTML = "";
+
+        data.forEach((ligne, i) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+                        <td>${ligne.periode}</td>
+                        <td>${ligne.annee}</td>
+                        <td>${ligne.pret}</td>
+                        <td>${ligne.interet}</td>
+                        <td>${ligne.assurance}</td>
+                        <td>${ligne.mensualite}</td>
+                        <td>${ligne.valeur_net}</td>
+                    `;
+          tbody.appendChild(tr);
+        });
+
+        const modal = new bootstrap.Modal(document.getElementById("modalEcheancier"));
+        modal.show();
+      }, () => {
+        alert("Erreur lors du chargement de l’échéancier annuel.");
+      });
+    }
+
+    document.getElementById("btn-valider-pret").addEventListener("click", function () {
+      if (!currentPretId) return;
+
+      if (!confirm("Valider ce prêt et générer les mensualités ?")) return;
+
+      ajax("POST", `/prets/${currentPretId}/valider`, "", (res) => {
+        alert("✅ Prêt validé avec succès !");
+        chargerPrets();
+        const modal = bootstrap.Modal.getInstance(document.getElementById("modalEcheancier"));
+        modal.hide();
+      }, (xhr) => {
+        alert("❌ Erreur : " + xhr.responseText);
+      });
+    });
+
+    function rembourser(pretId) {
+      const montant = prompt("Montant du remboursement :");
+      const montantFloat = parseFloat(montant);
+      if (isNaN(montantFloat) || montantFloat <= 0) {
+        alert("Montant invalide.");
+        return;
+      }
+      const data = `pret_id=${pretId}&montant=${montantFloat}`;
+      ajax("POST", "/rembourser", data, () => {
+        alert("Remboursement enregistré !");
+        chargerPrets();
+      }, () => {
+        alert("Erreur lors du remboursement.");
+      });
+    }
+
+    function afficherPrets(prets) {
+      const loansList = document.getElementById("loansList");
+      loansList.innerHTML = "";
+
+      prets.forEach(p => {
+        const div = document.createElement("div");
+        div.className = `loan-item ${p.est_actif ? 'active' : 'pending'} ${p.en_retard ? 'overdue' : ''}`;
+        div.setAttribute("data-status", p.est_actif ? "active" : "pending");
+        div.setAttribute("data-type", p.type_nom.toLowerCase().replace(" ", ""));
+        div.setAttribute("data-amount", p.montant);
+        div.innerHTML = `
+                    <div class="loan-icon ${p.type_nom.toLowerCase().replace(" ", "")}">
+                        <i class="fas ${p.type_nom.toLowerCase().includes('auto') ? 'fa-car' : p.type_nom.toLowerCase().includes('immobilier') ? 'fa-home' : 'fa-user'}"></i>
+                    </div>
+                    <div class="loan-details">
+                        <div class="loan-client">${p.nom} ${p.prenom}</div>
+                        <div class="loan-type">${p.type_nom} (${p.taux}%)</div>
+                        <div class="loan-date">Accordé le ${new Date(p.date_debut).toLocaleDateString()}</div>
+                    </div>
+                    <div class="loan-amount">
+                        <div class="loan-total">€ ${p.montant}</div>
+                        <div class="loan-remaining">Reste: € ${p.montant - p.total_rembourse}</div>
+                        <div class="loan-status ${p.est_actif ? 'active' : 'pending'} ${p.en_retard ? 'overdue' : ''}">${p.est_actif ? (p.en_retard ? 'En retard' : 'Actif') : 'Clôturé'}</div>
+                        <div class="loan-actions">
+                            ${p.est_actif ? `<button class="action-btn pay" onclick="rembourser(${p.id})">Payer</button>` : ""}
+                            <button class="action-btn view" onclick="voirEcheancier(${p.id})">Échéancier</button>
+                            <button class="action-btn pdf" onclick="genererPDF(${p.id})">Exporter PDF</button>
+                        </div>
+                    </div>
+                `;
+        loansList.appendChild(div);
+      });
+    }
+
+    function genererPDF(pretId) {
+      // Récupérer les infos du prêt à partir de la liste déjà chargée
+      const pret = trouverPretDansListe(pretId);
+
+      if (!pret) {
+        alert("Impossible de trouver les détails du prêt.");
+        return;
+      }
+
+      // Récupérer l'échéancier avec la route disponible
+      ajax("GET", `/prets/${pretId}/echeancier`, null, (echeancier) => {
+        // Créer un formulaire dynamique pour envoyer les données au script PHP
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'generer_pdf.php';
+        form.target = '_blank';
+
+        // Ajouter les données du prêt
+        const pretInput = document.createElement('input');
+        pretInput.type = 'hidden';
+        pretInput.name = 'pret_data';
+        pretInput.value = JSON.stringify(pret);
+        form.appendChild(pretInput);
+
+        // Ajouter l'échéancier
+        const echeancierInput = document.createElement('input');
+        echeancierInput.type = 'hidden';
+        echeancierInput.name = 'echeancier_data';
+        echeancierInput.value = JSON.stringify(echeancier);
+        form.appendChild(echeancierInput);
+
+        // Ajouter le formulaire à la page et le soumettre
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+      }, () => {
+        alert("Erreur lors de la récupération de l'échéancier.");
+      });
+    }
+
+    // Fonction utilitaire pour trouver un prêt dans la liste déjà chargée
+    function trouverPretDansListe(pretId) {
+      const loanItems = document.querySelectorAll('.loan-item');
+      for (const item of loanItems) {
+        const actionsDiv = item.querySelector('.loan-actions');
+        if (actionsDiv) {
+          const buttons = actionsDiv.querySelectorAll('button');
+          for (const btn of buttons) {
+            if (btn.onclick && btn.onclick.toString().includes(pretId)) {
+              // Reconstruire l'objet pret à partir du DOM
+              return {
+                id: pretId,
+                nom: item.querySelector('.loan-client').textContent.split(' ')[0],
+                prenom: item.querySelector('.loan-client').textContent.split(' ')[1],
+                type_nom: item.querySelector('.loan-type').textContent.split(' (')[0],
+                taux: parseFloat(item.querySelector('.loan-type').textContent.match(/\((\d+\.?\d*)%\)/)[1]),
+                montant: parseFloat(item.querySelector('.loan-total').textContent.replace('€ ', '').replace(',', '')),
+                date_debut: new Date(item.querySelector('.loan-date').textContent.replace('Accordé le ', '')).toISOString().split('T')[0],
+                duree_mois: 0, // Vous devrez peut-être ajuster cela
+                est_actif: item.querySelector('.loan-status').textContent === 'Actif',
+                total_rembourse: parseFloat(item.querySelector('.loan-total').textContent.replace('€ ', '')) -
+                  parseFloat(item.querySelector('.loan-remaining').textContent.replace('Reste: € ', ''))
+              };
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    // Initialisation
+    chargerClients();
+    chargerTypesPret();
+    chargerPrets();
+  </script>
+</body>
+
+</html>

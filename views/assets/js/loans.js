@@ -106,3 +106,40 @@
                 }
             }
         });
+
+        document.addEventListener('DOMContentLoaded', function () {
+    // Ensure Bootstrap modal functionality is initialized
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+        });
+    });
+
+    // Center modal vertically when shown
+    const modalDialogs = document.querySelectorAll('.modal-dialog');
+    modalDialogs.forEach(dialog => {
+        const modal = dialog.closest('.modal');
+        modal.addEventListener('show.bs.modal', function () {
+            const modalHeight = dialog.offsetHeight;
+            const windowHeight = window.innerHeight;
+            dialog.style.marginTop = `${(windowHeight - modalHeight) / 2}px`;
+        });
+    });
+
+    // Adjust modal on window resize
+    window.addEventListener('resize', function () {
+        modalDialogs.forEach(dialog => {
+            if (dialog.closest('.modal.show')) {
+                const modalHeight = dialog.offsetHeight;
+                const windowHeight = window.innerHeight;
+                dialog.style.marginTop = `${(windowHeight - modalHeight) / 2}px`;
+            }
+        });
+    });
+});

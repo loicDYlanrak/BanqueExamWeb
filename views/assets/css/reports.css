@@ -824,3 +824,11 @@
   .report-card.dws {
       height: 42%;
   }
+
+  .date-deb {
+      display: flex;
+  }
+
+  .filters.date-retard {
+      width: 30%;
+  }

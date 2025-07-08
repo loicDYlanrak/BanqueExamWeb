@@ -33,7 +33,8 @@ class ClientController
 
         // Récupérer ses prêts
         $stmt = $db->prepare("
-                SELECT p.*, tp.nom as type_pret 
+                SELECT p.*, tp.nom as type_pret, 
+                tp.duree_annee as duree, tp.assurance as taux_assurance 
                 FROM pret p
                 JOIN type_pret tp ON p.type_pret_id = tp.id
                 WHERE p.client_id = ?
