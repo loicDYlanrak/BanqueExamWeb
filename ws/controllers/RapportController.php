@@ -17,7 +17,7 @@ class RapportController
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         Flight::json([
-            'benefices_totaux' => $result['benefices'] ?? 0
+            'benefices_totaux' => $result['benefices'] ?? 0 
         ]);
     }
 

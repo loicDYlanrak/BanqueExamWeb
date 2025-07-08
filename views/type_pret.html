@@ -1,129 +1,180 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Type de pret</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input, button { margin: 5px; padding: 5px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Types de Prêt - FundFlow</title>
+    <link rel="stylesheet" href="assets/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/loans.css">
 </head>
 <body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
 
-  <h1>Type de pret</h1>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-university"></i>
+                FundFlow
+            </a>
+            <ul class="nav-links">
+                <li><a href="fond.html">Fonds</a></li>
+                <li><a href="type_pret.html" class="active">Types Prêts</a></li>
+                <li><a href="pret.html">Prêts</a></li>
+                <li><a href="client.html">Clients</a></li>
+                <li><a href="rapport.html">Rapports</a></li>
+            </ul>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
+        </div>
+    </nav>
 
-  <div>
-    <input type="hidden" id="id">
-    <input type="text" id="nom" placeholder="Nom">
-    <input type="number" id="taux" placeholder="Taux">
-    <input type="number" id="duree_annee" placeholder="Durée(annee)">
-    <input type="number" id="assurance" placeholder="Assurance">
-    <button onclick="ajouterOuModifier()">Ajouter / Modifier</button>
-  </div>
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Gestion des Types de Prêt</h1>
+            
+        </div>
 
-  <table id="table-type-pret">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nom</th>
-        <th>Taux</th>
-        <th>Durée(annee)</th>
-        <th>Assurance</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+        <div class="loans-grid change">
+            <div class="loans-main">
+                <div class="loans-list">
+                    <div class="list-header">
+                        <h3 class="list-title">Liste des Types de Prêt</h3>
+                    </div>
+                    <div class="loansList">
+                        
+                        <table id="table-type-pret" class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom</th>
+                                    <th>Taux</th>
+                                    <th>Durée (années)</th>
+                                    <th>Assurance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-  <script>
-    const apiBase = "http://localhost:8000";
+            <div class="sidebar">
+              <div class="quick-stats">
+                <input type="hidden" id="id">
+                <div class="filter-group">
+                    <label class="filter-label">Nom</label>
+                    <input type="text" id="nom" placeholder="Nom" class="filter-select">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Taux</label>
+                    <input type="number" id="taux" placeholder="Taux" class="filter-select">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Durée (années)</label>
+                    <input type="number" id="duree_annee" placeholder="Durée (années)" class="filter-select">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Assurance</label>
+                    <input type="number" id="assurance" placeholder="Assurance" class="filter-select">
+                </div>
+                <button class="btn btn-primary" onclick="ajouterOuModifier()">Ajouter / Modifier</button>
+              </div>
+            </div>
 
-    function ajax(method, url, data, callback) {
-      const xhr = new XMLHttpRequest();
-      xhr.open(method, apiBase + url, true);
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          callback(JSON.parse(xhr.responseText));
+
+        </div>
+    </div>
+
+    <script>
+        const apiBase = "http://localhost:8000";
+
+        function ajax(method, url, data, callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open(method, apiBase + url, true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    callback(JSON.parse(xhr.responseText));
+                }
+            };
+            xhr.send(data);
         }
-      };
-      xhr.send(data);
-    }
 
-    function chargerEtudiants() {
-      ajax("GET", "/type_pret", null, (data) => {
-        const tbody = document.querySelector("#table-type-pret tbody");
-        tbody.innerHTML = "";
-        data.forEach(e => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${e.id}</td>
-            <td>${e.nom}</td>
-            <td>${e.taux}</td>
-            <td>${e.duree_annee}</td>
-            <td>${e.assurance}</td>
-            <td>
-              <button onclick='remplirFormulaire(${JSON.stringify(e)})'>✏️</button>
-              <button onclick='supprimerEtudiant(${e.id})'>🗑️</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-    }
+        function chargerEtudiants() {
+            ajax("GET", "/type_pret", null, (data) => {
+                const tbody = document.querySelector("#table-type-pret tbody");
+                tbody.innerHTML = "";
+                data.forEach(e => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${e.id}</td>
+                        <td>${e.nom}</td>
+                        <td>${e.taux}</td>
+                        <td>${e.duree_annee}</td>
+                        <td>${e.assurance}</td>
+                        <td>
+                            <button class="action-btn view" onclick='remplirFormulaire(${JSON.stringify(e)})'>✏️</button>
+                            <button class="action-btn pay" onclick='supprimerEtudiant(${e.id})'>🗑️</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
 
-    function ajouterOuModifier() {
-      const id = document.getElementById("id").value;
-      const nom = document.getElementById("nom").value;
-      const taux = document.getElementById("taux").value;
-      const duree_annee = document.getElementById("duree_annee").value;
-      const assurance = document.getElementById("assurance").value;
+        function ajouterOuModifier() {
+            const id = document.getElementById("id").value;
+            const nom = document.getElementById("nom").value;
+            const taux = document.getElementById("taux").value;
+            const duree_annee = document.getElementById("duree_annee").value;
+            const assurance = document.getElementById("assurance").value;
 
-      const data = `nom=${encodeURIComponent(nom)}&taux=${encodeURIComponent(taux)}&duree_annee=${encodeURIComponent(duree_annee)}&assurance=${encodeURIComponent(assurance)}`;
+            const data = `nom=${encodeURIComponent(nom)}&taux=${encodeURIComponent(taux)}&duree_annee=${encodeURIComponent(duree_annee)}&assurance=${encodeURIComponent(assurance)}`;
 
-      if (id) {
-        console.log(data);
-        ajax("PUT", `/type_pret/${id}`, data, () => {
-          resetForm();
-          chargerEtudiants();
-        });
-      } else {
-        ajax("POST", "/type_pret", data, () => {
-          resetForm();
-          chargerEtudiants();
-        });
-      }
-    }
+            if (id) {
+                ajax("PUT", `/type_pret/${id}`, data, () => {
+                    resetForm();
+                    chargerEtudiants();
+                });
+            } else {
+                ajax("POST", "/type_pret", data, () => {
+                    resetForm();
+                    chargerEtudiants();
+                });
+            }
+        }
 
-    function remplirFormulaire(e) {
-      document.getElementById("id").value = e.id;
-      document.getElementById("nom").value = e.nom;
-      document.getElementById("taux").value = e.taux;
-      document.getElementById("duree_annee").value = e.duree_annee;
-      document.getElementById("assurance").value = e.assurance;
-    }
+        function remplirFormulaire(e) {
+            document.getElementById("id").value = e.id;
+            document.getElementById("nom").value = e.nom;
+            document.getElementById("taux").value = e.taux;
+            document.getElementById("duree_annee").value = e.duree_annee;
+            document.getElementById("assurance").value = e.assurance;
+        }
 
-    function supprimerEtudiant(id) {
-      if (confirm("Supprimer ce type de pret ?")) {
-        ajax("DELETE", `/type_pret/${id}`, null, () => {
-          chargerEtudiants();
-        });
-      }
-    }
+        function supprimerEtudiant(id) {
+            if (confirm("Supprimer ce type de prêt ?")) {
+                ajax("DELETE", `/type_pret/${id}`, null, () => {
+                    chargerEtudiants();
+                });
+            }
+        }
 
-    function resetForm() {
-      document.getElementById("id").value = "";
-      document.getElementById("nom").value = "";
-      document.getElementById("taux").value = "";
-      document.getElementById("duree_annee").value = "";
-      document.getElementById("assurance").value = "";
-    }
+        function resetForm() {
+            document.getElementById("id").value = "";
+            document.getElementById("nom").value = "";
+            document.getElementById("taux").value = "";
+            document.getElementById("duree_annee").value = "";
+            document.getElementById("assurance").value = "";
+        }
 
-    chargerEtudiants();
-  </script>
-
+        chargerEtudiants();
+    </script>
 </body>
 </html>
