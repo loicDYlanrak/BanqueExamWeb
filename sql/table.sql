@@ -45,7 +45,7 @@ CREATE TABLE remboursement (
     FOREIGN KEY (pret_id) REFERENCES pret(id)
 );
 
-CREATE TABLE Mensualite(
+CREATE TABLE mensualite(
     id INT PRIMARY KEY AUTO_INCREMENT,
     pret_id INT,
     mois INT,
