@@ -71,9 +71,9 @@
                     <tfoot>
                         <tr>
                             <td><strong>Total</strong></td>
-                            <td id="total-theorique">0.00 €</td>
-                            <td id="total-reel">0.00 €</td>
-                            <td id="total-ecart">0.00 €</td>
+                            <td id="total-theorique">0.00 Ar</td>
+                            <td id="total-reel">0.00 Ar</td>
+                            <td id="total-ecart">0.00 Ar</td>
                             <td id="total-prets">0</td>
                         </tr>
                     </tfoot>
@@ -186,7 +186,7 @@
                 const montant = parseFloat(data.benefices_totaux || 0);
                 const classe = montant >= 0 ? "metric-value positive" : "metric-value negative";
 
-                element.innerHTML = `€ ${montant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
+                element.innerHTML = `Ar ${montant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
                 element.className = `metric-large ${classe}`;
             }, (error) => {
                 document.getElementById("benefices-totaux").innerHTML = "<span class='metric-value negative'>Erreur lors du chargement</span>";
@@ -221,9 +221,9 @@
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>${item.mois_annee}</td>
-                        <td>€ ${parseFloat(item.interets_theoriques).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
-                        <td>€ ${parseFloat(item.interets_reels).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
-                        <td class="${ecartClass}">€ ${ecart.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                        <td>Ar ${parseFloat(item.interets_theoriques).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                        <td>Ar ${parseFloat(item.interets_reels).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                        <td class="${ecartClass}">Ar ${ecart.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                         <td>${item.nombre_prets}</td>
                     `;
                     tbody.appendChild(tr);
@@ -236,9 +236,9 @@
                 const totalEcart = totalReel - totalTheorique;
                 const totalEcartClass = totalEcart >= 0 ? "metric-value positive" : "metric-value negative";
 
-                document.getElementById("total-theorique").textContent = `€ ${totalTheorique.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
-                document.getElementById("total-reel").textContent = `€ ${totalReel.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
-                document.getElementById("total-ecart").textContent = `€ ${totalEcart.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
+                document.getElementById("total-theorique").textContent = `Ar ${totalTheorique.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
+                document.getElementById("total-reel").textContent = `Ar ${totalReel.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
+                document.getElementById("total-ecart").textContent = `Ar ${totalEcart.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
                 document.getElementById("total-ecart").className = totalEcartClass;
                 document.getElementById("total-prets").textContent = totalPrets;
 
@@ -263,7 +263,7 @@
                 if (data.prets_en_retard && data.prets_en_retard.length > 0) {
                     let html = `
                         <div class="metric-subtitle"><strong>Nombre de prêts en retard:</strong> ${data.nombre_prets_en_retard}</div>
-                        <div class="metric-subtitle"><strong>Montant total des retards:</strong> <span class="metric-value negative">€ ${parseFloat(data.total_retards).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</span></div>
+                        <div class="metric-subtitle"><strong>Montant total des retards:</strong> <span class="metric-value negative">Ar ${parseFloat(data.total_retards).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</span></div>
                         <div style="overflow-x: auto;">
                             <table class="profit-table">
                                 <thead>
@@ -288,11 +288,11 @@
                             <tr>
                                 <td>${pret.prenom} ${pret.nom}</td>
                                 <td>${pret.type_pret}</td>
-                                <td>€ ${parseFloat(pret.montant).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                                <td>Ar ${parseFloat(pret.montant).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                                 <td>${pret.date_debut}</td>
-                                <td>€ ${mensualite.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                                <td>Ar ${mensualite.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                                 <td>${retards}</td>
-                                <td class="metric-value negative">€ ${montantDu.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                                <td class="metric-value negative">Ar ${montantDu.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                             </tr>`;
                     });
 
@@ -336,12 +336,12 @@
             }, (data) => {
                 const element = document.getElementById("resultat-mensualite");
                 element.innerHTML = `
-                    <p><strong>Montant du prêt:</strong> € ${data.montant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</p>
+                    <p><strong>Montant du prêt:</strong> Ar ${data.montant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</p>
                     <p><strong>Taux annuel:</strong> ${data.taux_annuel}%</p>
                     <p><strong>Durée:</strong> ${data.duree_mois} mois (${Math.floor(data.duree_mois / 12)} ans et ${data.duree_mois % 12} mois)</p>
-                    <p><strong>Mensualité:</strong> <span class="metric-value positive">€ ${data.mensualite.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</span></p>
-                    <p><strong>Coût total du crédit:</strong> € ${(data.mensualite * data.duree_mois).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</p>
-                    <p><strong>Intérêts totaux:</strong> € ${((data.mensualite * data.duree_mois) - data.montant).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</p>
+                    <p><strong>Mensualité:</strong> <span class="metric-value positive">Ar ${data.mensualite.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</span></p>
+                    <p><strong>Coût total du crédit:</strong> Ar ${(data.mensualite * data.duree_mois).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</p>
+                    <p><strong>Intérêts totaux:</strong> Ar ${((data.mensualite * data.duree_mois) - data.montant).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</p>
                 `;
             }, (error) => {
                 document.getElementById("resultat-mensualite").innerHTML = "<p class='metric-value negative'>Erreur lors du calcul de la mensualité</p>";
@@ -357,7 +357,7 @@
                     labels: chartData.labels,
                     datasets: [
                         {
-                            label: 'Bénéfices Théoriques (€)',
+                            label: 'Bénéfices Théoriques (Ar)',
                             data: chartData.theorique,
                             borderColor: '#10b981',
                             backgroundColor: 'rgba(16, 185, 129, 0.2)',
@@ -370,7 +370,7 @@
                             pointRadius: 6
                         },
                         {
-                            label: 'Bénéfices Réels (€)',
+                            label: 'Bénéfices Réels (Ar)',
                             data: chartData.reel,
                             borderColor: '#667eea',
                             backgroundColor: 'rgba(102, 126, 234, 0.2)',
