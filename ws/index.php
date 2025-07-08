@@ -35,6 +35,7 @@
     Flight::route('GET /rapports/retards', ['RapportController','getPretsEnRetard']);
     Flight::route('POST /rapports/calcul-mensualite', ['RapportController','calculMensualite']);
     Flight::route('GET /rapports/interets-mois', ['RapportController','getInteretsMois']);
+    Flight::route('GET /rapports/fonds-disponibles', ['RapportController', 'getFondsDisponiblesParMois']);
 
     // Lister tous les types
     Flight::route('GET /type_pret', ['TypePretController', 'getAll']);
