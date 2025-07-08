@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Type de pret</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input, button { margin: 5px; padding: 5px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body>
+
+  <h1>Type de pret</h1>
+
+  <div>
+    <input type="hidden" id="id">
+    <input type="text" id="nom" placeholder="Nom">
+    <input type="number" id="taux" placeholder="Taux">
+    <input type="number" id="duree_annee" placeholder="Durée(annee)">
+    <input type="number" id="assurance" placeholder="Assurance">
+    <button onclick="ajouterOuModifier()">Ajouter / Modifier</button>
+  </div>
+
+  <table id="table-type-pret">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Taux</th>
+        <th>Durée(annee)</th>
+        <th>Assurance</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const apiBase = "http://localhost:8000";
+
+    function ajax(method, url, data, callback) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, apiBase + url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          callback(JSON.parse(xhr.responseText));
+        }
+      };
+      xhr.send(data);
+    }
+
+    function chargerEtudiants() {
+      ajax("GET", "/type_pret", null, (data) => {
+        const tbody = document.querySelector("#table-type-pret tbody");
+        tbody.innerHTML = "";
+        data.forEach(e => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${e.id}</td>
+            <td>${e.nom}</td>
+            <td>${e.taux}</td>
+            <td>${e.duree_annee}</td>
+            <td>${e.assurance}</td>
+            <td>
+              <button onclick='remplirFormulaire(${JSON.stringify(e)})'>✏️</button>
+              <button onclick='supprimerEtudiant(${e.id})'>🗑️</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function ajouterOuModifier() {
+      const id = document.getElementById("id").value;
+      const nom = document.getElementById("nom").value;
+      const taux = document.getElementById("taux").value;
+      const duree_annee = document.getElementById("duree_annee").value;
+      const assurance = document.getElementById("assurance").value;
+
+      const data = `nom=${encodeURIComponent(nom)}&taux=${encodeURIComponent(taux)}&duree_annee=${encodeURIComponent(duree_annee)}&assurance=${encodeURIComponent(assurance)}`;
+
+      if (id) {
+        console.log(data);
+        ajax("PUT", `/type_pret/${id}`, data, () => {
+          resetForm();
+          chargerEtudiants();
+        });
+      } else {
+        ajax("POST", "/type_pret", data, () => {
+          resetForm();
+          chargerEtudiants();
+        });
+      }
+    }
+
+    function remplirFormulaire(e) {
+      document.getElementById("id").value = e.id;
+      document.getElementById("nom").value = e.nom;
+      document.getElementById("taux").value = e.taux;
+      document.getElementById("duree_annee").value = e.duree_annee;
+      document.getElementById("assurance").value = e.assurance;
+    }
+
+    function supprimerEtudiant(id) {
+      if (confirm("Supprimer ce type de pret ?")) {
+        ajax("DELETE", `/type_pret/${id}`, null, () => {
+          chargerEtudiants();
+        });
+      }
+    }
+
+    function resetForm() {
+      document.getElementById("id").value = "";
+      document.getElementById("nom").value = "";
+      document.getElementById("taux").value = "";
+      document.getElementById("duree_annee").value = "";
+      document.getElementById("assurance").value = "";
+    }
+
+    chargerEtudiants();
+  </script>
+
+</body>
+</html>
