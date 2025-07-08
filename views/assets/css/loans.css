@@ -808,3 +808,15 @@ button.btn.btn-secondary.clk {
     border-radius: 7px;
     box-shadow: 4px 4px 20px #6c6c6c94;
 }
+
+  #message {
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+
+  div#message {
+    border: 1px solid #00800000;
+    background-color: #00800021;
+}
