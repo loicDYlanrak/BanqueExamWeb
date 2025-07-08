@@ -131,7 +131,7 @@ body {
 .page-title {
     font-size: 2.5rem;
     font-weight: bold;
-    background: var(--gradient);
+    background: var(--primary-color);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -349,7 +349,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #1e293b; 
     font-size: 1.3rem;
 }
 
@@ -800,4 +800,11 @@ table#table-type-pret {
     display: flex;
     flex-direction: column;
     gap: 21px;
+}
+
+button.btn.btn-secondary.clk {
+    background: var(--primary-color);
+    color: white;
+    border-radius: 7px;
+    box-shadow: 4px 4px 20px #6c6c6c94;
 }

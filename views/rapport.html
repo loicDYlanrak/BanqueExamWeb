@@ -17,7 +17,7 @@
 
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="logo">
+            <a href="index.html" class="logo"> 
                 <i class="fas fa-university"></i>
                 FundFlow
             </a>
@@ -28,6 +28,9 @@
                 <li><a href="client.html">Clients</a></li>
                 <li><a href="rapport.html" class="active">Rapports</a></li>
             </ul>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
         </div>
     </nav>
 
@@ -144,7 +147,7 @@
             </div>
         </div>
     </div>
-
+    <script src="assets/js/reports.js"></script>
     <script>
         const apiBase = "http://localhost:8000";
         let chartData = { labels: [], theorique: [], reel: [] };
