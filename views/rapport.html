@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="assets/css/reports.css">
 </head>
+
 <body>
     <div class="floating-shapes">
         <div class="shape"></div>
@@ -17,7 +19,7 @@
 
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="logo"> 
+            <a href="index.html" class="logo">
                 <i class="fas fa-university"></i>
                 FundFlow
             </a>
@@ -37,6 +39,49 @@
     <div class="main-content">
         <div class="page-header">
             <h1 class="page-title">Rapports Financiers</h1>
+        </div>
+
+        <div class="table-section">
+            <h3 class="section-title">
+                <div class="section-icon" style="background: var(--success-color);">
+                    <i class="fas fa-piggy-bank"></i>
+                    
+                </div>
+                Fonds Disponibles par Mois
+            </h3>
+            <div class="filters">
+                <div class="date-deb">
+                    <label class="form-label">Date début:</label>
+                    <input class="form-input" type="month" id="filter-fonds-debut" onchange="chargerFondsDisponibles()">
+                </div>
+                <div class="date-deb">
+                    <label class="form-label">Date fin:</label>
+                    <input class="form-input" type="month" id="filter-fonds-fin" onchange="chargerFondsDisponibles()">
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="profit-table" id="table-fonds-disponibles">
+                    <thead>
+                        <tr>
+                            <th>Mois/Année</th>
+                            <th>Montant Non Emprunté</th>
+                            <th>Remboursements</th>
+                            <th>Total Disponible</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td id="total-non-emprunte">0.00 Ar</td>
+                            <td id="total-remboursements">0.00 Ar</td>
+                            <td id="total-disponible">0.00 Ar</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <br>
+            <button class="btn btn-secondary" onclick="chargerFondsDisponibles()">Actualiser</button>
         </div>
 
         <div class="table-section">
@@ -95,7 +140,7 @@
                     <button class="btn btn-secondary" onclick="chargerBeneficesTotaux()">Actualiser</button>
                 </div>
             </div>
-        
+
             <div class="report-card">
                 <div class="report-header">
                     <h3 class="report-title">Évolution Mensuelle</h3>
@@ -137,8 +182,9 @@
                 </div>
                 <div class="report-content mensualite">
                     <div class="calculator">
-                        <input class="form-input" type="number" id="calc-montant" placeholder="Montant" step="0.01" >
-                        <input class="form-input" type="number" id="calc-taux" placeholder="Taux annuel (%)" step="0.01">
+                        <input class="form-input" type="number" id="calc-montant" placeholder="Montant" step="0.01">
+                        <input class="form-input" type="number" id="calc-taux" placeholder="Taux annuel (%)"
+                            step="0.01">
                         <input class="form-input" type="number" id="calc-duree" placeholder="Durée (mois)">
                         <button class="btn btn-secondary" onclick="calculerMensualite()">Calculer</button>
                     </div>
@@ -409,6 +455,61 @@
             });
         }
 
+        function chargerFondsDisponibles() {
+            const dateDebut = document.getElementById('filter-fonds-debut').value;
+            const dateFin = document.getElementById('filter-fonds-fin').value;
+
+            if (!dateDebut || !dateFin) return;
+
+            ajax("GET", `/rapports/fonds-disponibles?debut=${dateDebut}&fin=${dateFin}`, null, (data) => {
+                const tbody = document.querySelector("#table-fonds-disponibles tbody");
+                tbody.innerHTML = "";
+
+                let totalNonEmprunte = 0;
+                let totalRemboursements = 0;
+                let totalDisponible = 0;
+
+                data.forEach(item => {
+                    const nonEmprunte = parseFloat(item.montant_non_emprunte);
+                    const remboursements = parseFloat(item.remboursements);
+                    const disponible = parseFloat(item.fonds_disponibles);
+
+                    totalNonEmprunte += nonEmprunte;
+                    totalRemboursements += remboursements;
+                    totalDisponible += disponible;
+
+                    const classeNonEmprunte = nonEmprunte < 0 ? 'metric-value negative' : '';
+                    const classeRemboursements = remboursements < 0 ? 'metric-value negative' : '';
+                    const classeDisponible = disponible < 0 ? 'metric-value negative' : 'metric-value positive';
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                <td>${item.mois_annee}</td>
+                <td class="${classeNonEmprunte}">Ar ${nonEmprunte.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                <td class="${classeRemboursements}">Ar ${remboursements.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                <td class="${classeDisponible}">Ar ${disponible.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+            `;
+                    tbody.appendChild(tr);
+                });
+
+                const classeTotalNonEmprunte = totalNonEmprunte < 0 ? 'metric-value negative' : '';
+                const classeTotalRemboursements = totalRemboursements < 0 ? 'metric-value negative' : '';
+                const classeTotalDisponible = totalDisponible < 0 ? 'metric-value negative' : 'metric-value positive';
+
+                document.getElementById("total-non-emprunte").textContent = `Ar ${totalNonEmprunte.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
+                document.getElementById("total-non-emprunte").className = classeTotalNonEmprunte;
+
+                document.getElementById("total-remboursements").textContent = `Ar ${totalRemboursements.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
+                document.getElementById("total-remboursements").className = classeTotalRemboursements;
+
+                document.getElementById("total-disponible").textContent = `Ar ${totalDisponible.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
+                document.getElementById("total-disponible").className = classeTotalDisponible;
+            }, (error) => {
+                document.querySelector("#table-fonds-disponibles tbody").innerHTML =
+                    "<tr><td colspan='4' class='metric-value negative'>Erreur lors du chargement des données</td></tr>";
+            });
+        }
+
         // Initialisation des filtres avec la date actuelle
         document.addEventListener('DOMContentLoaded', function () {
             const now = new Date();
@@ -423,10 +524,16 @@
 
             document.getElementById('simulation-date').value = currentMonth;
 
+            // Dans la fonction DOMContentLoaded, ajoutez:
+            document.getElementById('filter-fonds-debut').value = startMonth;
+            document.getElementById('filter-fonds-fin').value = currentMonth;
+            chargerFondsDisponibles();
+
             chargerBeneficesTotaux();
             chargerInteretsMois();
             chargerPretsEnRetard();
         });
     </script>
 </body>
+
 </html>
