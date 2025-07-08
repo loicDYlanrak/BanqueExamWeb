@@ -1,6 +1,81 @@
 <?php
 class RapportController
 {
+
+    public static function getFondsDisponiblesParMois()
+    {
+        $db = getDB();
+        $debut = Flight::request()->query['debut'] ?? null;
+        $fin = Flight::request()->query['fin'] ?? null;
+
+        $where = "WHERE 1=1";
+        $params = [];
+
+        if ($debut && $fin) {
+            $where .= " AND CONCAT(annee, '-', LPAD(mois, 2, '0')) BETWEEN :debut AND :fin";
+            $params[':debut'] = $debut;
+            $params[':fin'] = $fin;
+        }
+
+        $sql = "
+    SELECT 
+        mois,
+        annee,
+        SUM(fonds_disponibles) as fonds_disponibles,
+        SUM(montant_non_emprunte) as montant_non_emprunte,
+        SUM(remboursements) as remboursements
+    FROM (
+        -- Fonds initiaux non empruntés
+        SELECT 
+            MONTH(:current_date) as mois, 
+            YEAR(:current_date) as annee,
+            (SELECT montant FROM fonds ORDER BY id DESC LIMIT 1) - 
+            COALESCE(SUM(p.montant), 0) as montant_non_emprunte,
+            0 as remboursements,
+            (SELECT montant FROM fonds ORDER BY id DESC LIMIT 1) - 
+            COALESCE(SUM(p.montant), 0) as fonds_disponibles
+        FROM pret p
+        WHERE p.est_actif = TRUE
+        
+        UNION ALL
+        
+        -- Remboursements par mois
+        SELECT 
+            MONTH(r.date_remboursement) as mois,
+            YEAR(r.date_remboursement) as annee,
+            0 as montant_non_emprunte,
+            SUM(r.montant) as remboursements,
+            SUM(r.montant) as fonds_disponibles
+        FROM remboursement r
+        JOIN pret p ON r.pret_id = p.id
+        WHERE p.est_actif = TRUE
+        GROUP BY YEAR(r.date_remboursement), MONTH(r.date_remboursement)
+    ) as combined_data
+    $where
+    GROUP BY annee, mois
+    ORDER BY annee, mois
+    ";
+
+        $params[':current_date'] = date('Y-m-d');
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $formatted = array_map(function ($item) {
+            return [
+                'mois' => $item['mois'],
+                'annee' => $item['annee'],
+                'fonds_disponibles' => (float)$item['fonds_disponibles'],
+                'montant_non_emprunte' => (float)$item['montant_non_emprunte'],
+                'remboursements' => (float)$item['remboursements'],
+                'mois_annee' => sprintf("%02d/%04d", $item['mois'], $item['annee'])
+            ];
+        }, $results);
+
+        Flight::json($formatted);
+    }
     public static function getBeneficesTotaux()
     {
         $db = getDB();

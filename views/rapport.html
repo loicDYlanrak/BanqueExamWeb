@@ -194,6 +194,41 @@
     </div>
 
     <div class="rapport-section">
+        <h3>Fonds Disponibles par Mois</h3>
+        <div class="filters">
+            <div>
+                <label>Date début:</label>
+                <input type="month" id="filter-fonds-debut" onchange="chargerFondsDisponibles()">
+            </div>
+            <div>
+                <label>Date fin:</label>
+                <input type="month" id="filter-fonds-fin" onchange="chargerFondsDisponibles()">
+            </div>
+        </div>
+
+        <table id="table-fonds-disponibles">
+            <thead>
+                <tr>
+                    <th>Mois/Année</th>
+                    <th>Montant Non Emprunté</th>
+                    <th>Remboursements</th>
+                    <th>Total Disponible</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td><strong>Total</strong></td>
+                    <td id="total-non-emprunte">0.00 €</td>
+                    <td id="total-remboursements">0.00 €</td>
+                    <td id="total-disponible">0.00 €</td>
+                </tr>
+            </tfoot>
+        </table>
+        <button onclick="chargerFondsDisponibles()">Actualiser</button>
+    </div>
+
+    <div class="rapport-section">
         <h3><i class="fas fa-chart-line"></i> Intérêts gagnés par mois</h3>
         <div class="filters">
             <div>
@@ -291,6 +326,10 @@
             xhr.send(method === 'GET' ? null : JSON.stringify(data));
         }
 
+
+
+
+
         function chargerBeneficesTotaux() {
             document.getElementById("benefices-totaux").innerHTML = "<p>Chargement...</p>";
 
@@ -328,10 +367,73 @@
             // Date de simulation par défaut = aujourd'hui
             document.getElementById('simulation-date').value = currentMonth;
 
+            document.getElementById('filter-fonds-debut').value = startMonth;
+            document.getElementById('filter-fonds-fin').value = currentMonth;
+
             // Charge les données initiales
+            chargerFondsDisponibles();
             chargerInteretsMois();
             chargerPretsEnRetard();
         });
+
+        function chargerFondsDisponibles() {
+            const dateDebut = document.getElementById('filter-fonds-debut').value;
+            const dateFin = document.getElementById('filter-fonds-fin').value;
+
+            if (!dateDebut || !dateFin) return;
+
+            ajax("GET", `/rapports/fonds-disponibles?debut=${dateDebut}&fin=${dateFin}`, null, (data) => {
+                const tbody = document.querySelector("#table-fonds-disponibles tbody");
+                tbody.innerHTML = "";
+
+                let totalNonEmprunte = 0;
+                let totalRemboursements = 0;
+                let totalDisponible = 0;
+
+                data.forEach(item => {
+                    // Conversion en nombres
+                    const nonEmprunte = parseFloat(item.montant_non_emprunte);
+                    const remboursements = parseFloat(item.remboursements);
+                    const disponible = parseFloat(item.fonds_disponibles);
+
+                    // Calcul des totaux
+                    totalNonEmprunte += nonEmprunte;
+                    totalRemboursements += remboursements;
+                    totalDisponible += disponible;
+
+                    // Détermination des classes CSS en fonction du signe
+                    const classeNonEmprunte = nonEmprunte < 0 ? 'montant-negatif' : '';
+                    const classeRemboursements = remboursements < 0 ? 'montant-negatif' : '';
+                    const classeDisponible = disponible < 0 ? 'montant-negatif' : 'montant-positif';
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                <td>${item.mois_annee}</td>
+                <td class="${classeNonEmprunte}">${nonEmprunte.toFixed(2)} €</td>
+                <td class="${classeRemboursements}">${remboursements.toFixed(2)} €</td>
+                <td class="${classeDisponible}">${disponible.toFixed(2)} €</td>
+            `;
+                    tbody.appendChild(tr);
+                });
+
+                // Gestion des couleurs pour les totaux
+                const classeTotalNonEmprunte = totalNonEmprunte < 0 ? 'montant-negatif' : '';
+                const classeTotalRemboursements = totalRemboursements < 0 ? 'montant-negatif' : '';
+                const classeTotalDisponible = totalDisponible < 0 ? 'montant-negatif' : 'montant-positif';
+
+                document.getElementById("total-non-emprunte").textContent = totalNonEmprunte.toFixed(2) + " €";
+                document.getElementById("total-non-emprunte").className = classeTotalNonEmprunte;
+
+                document.getElementById("total-remboursements").textContent = totalRemboursements.toFixed(2) + " €";
+                document.getElementById("total-remboursements").className = classeTotalRemboursements;
+
+                document.getElementById("total-disponible").textContent = totalDisponible.toFixed(2) + " €";
+                document.getElementById("total-disponible").className = classeTotalDisponible;
+            }, (error) => {
+                document.getElementById("table-fonds-disponibles").innerHTML =
+                    "<tr><td colspan='4' class='montant-negatif'>Erreur lors du chargement des données</td></tr>";
+            });
+        }
 
         // Fonction pour charger les intérêts par mois
         function chargerInteretsMois() {
